@@ -1,90 +1,100 @@
-# Tech Stack Document
+# Tech Stack Document for AI Schedule Auditor
 
-This document explains the key technologies chosen for the **codeguide-starter** project. It’s written in everyday language so anyone—technical or not—can understand why each tool was picked and how it supports the application.
+This document explains, in everyday language, the technology choices behind the AI Schedule Auditor project. It highlights how each piece fits together so that anyone—technical or not—can understand why we picked it and how it makes the app work smoothly.
 
 ## 1. Frontend Technologies
-The frontend is everything the user sees and interacts with. For this project, we’ve used:
 
-- **Next.js (App Router)**
-  - A React framework that makes page routing, server-side rendering, and API routes very simple.
-  - Enhances user experience by pre-rendering pages on the server or at build time, leading to faster initial load.
-- **React 18**
-  - The underlying library for building user interfaces with reusable components.
-  - Provides a smooth, interactive experience thanks to its virtual DOM and modern hooks.
-- **TypeScript**
-  - A superset of JavaScript that adds types (labels for data).
-  - Helps catch errors early during development and makes the code easier to maintain.
-- **CSS (globals.css & theme.css)**
-  - **globals.css** applies base styles (fonts, colors, resets) across the entire app.
-  - **dashboard/theme.css** defines the look and feel specific to the dashboard area.
-  - This separation keeps styles organized and avoids accidental style conflicts.
+Our goal on the frontend is a fast, interactive user interface that feels modern and cohesive. Here’s what we chose:
 
-By combining these tools, we have a clear structure (Next.js folders for pages and layouts), safer code (TypeScript), and flexible styling with vanilla CSS.
+- Next.js 15 (App Router)
+  - Provides a clear structure for pages and routes.
+  - Lets us use Server Components for data-heavy pages (like the dashboard) and Client Components for interactive parts (like chat).
+- React 19
+  - A popular, well-supported library for building user interfaces with reusable components.
+- shadcn/ui
+  - A ready-made component library (buttons, cards, modals) that follows a consistent design style.
+  - Ensures the chat interface (`assistant-ui`) and dashboard look like they belong together.
+- assistant-ui & @ai-sdk/react
+  - Specialized chat components and hooks for integrating our AI assistant.
+  - Makes it easy to build a conversational interface without styling or streaming logic from scratch.
+- Tailwind CSS v4
+  - A utility-first CSS framework for rapid, precise styling.
+  - Lets us customize layouts, colors, and spacing with simple class names.
+- Optional enhancements for smoother data loading:
+  - SWR or React Query for client-side data caching, automatic refresh, and error handling.
 
 ## 2. Backend Technologies
-The backend handles data, user accounts, and the logic behind the scenes. Our choices here are:
 
-- **Next.js API Routes**
-  - Allows us to write server-side code (`route.ts` files) alongside our frontend in the same project.
-  - Runs on Node.js, so we can handle requests like sign-up, sign-in, and data fetching in one place.
-- **Node.js Runtime**
-  - The JavaScript environment on the server that executes our API routes.
-- **bcrypt** (npm package)
-  - A library for hashing passwords securely before storing them.
-  - Ensures that even if someone got access to our data, raw passwords aren’t visible.
-- **(Optional) NextAuth.js or JWT**
-  - While this starter kit shows a custom authentication flow, it can easily integrate services like NextAuth.js for email-based login or JWT (JSON Web Tokens) for stateless sessions.
+Behind the scenes, the backend handles user data, schedules, and AI requests. Here’s the stack:
 
-These components work together to receive user credentials, verify or store them securely, manage sessions or tokens, and deliver protected data back to the frontend.
+- Next.js API Routes
+  - Serverless endpoints integrated directly into the app.
+  - We use `/api/auth` for authentication and `/api/chat` for processing chat messages.
+- Better Auth
+  - Manages secure sign-up, sign-in, and user sessions.
+  - Keeps each user’s schedule and chat history private.
+- Vercel AI SDK
+  - Streams AI model responses with built-in support for function calling.
+  - Lets us parse user messages, save events to the database, and send insights back in real time.
+- PostgreSQL
+  - A reliable, open-source relational database ideal for structured data like user accounts, events, and analytics.
+- Drizzle ORM & drizzle-kit
+  - Type-safe database queries and migrations written in TypeScript.
+  - Ensures our database schema (users, schedules, events, chat_messages, ai_insights) stays in sync with code.
+- Utilities and testing tools:
+  - Vitest or Jest for unit tests (verifying our data processing and API logic).
+  - Playwright for end-to-end tests (simulating user flows like chatting and viewing the calendar).
 
 ## 3. Infrastructure and Deployment
-Infrastructure covers where and how we host the app, as well as how changes get delivered:
 
-- **Git & GitHub**
-  - Version control system (Git) and remote hosting (GitHub) keep track of all code changes and allow team collaboration.
-- **Vercel (or Netlify)**
-  - A popular hosting service optimized for Next.js, with one-click deployments and global content delivery.
-  - Automatically rebuilds and deploys the site whenever code is pushed to the main branch.
-- **GitHub Actions (CI/CD)**
-  - Automates tasks like linting (ESLint), formatting (Prettier), and running any tests you add.
-  - Ensures that only clean, tested code goes live.
+We chose infrastructure setups that make development smooth and production stable:
 
-Together, these tools provide a reliable, scalable setup where every code change is tested and deployed quickly, with minimal manual work.
+- Docker & Docker Compose
+  - Containers for the Next.js app and PostgreSQL database.
+  - Guarantees everyone on the team runs the same environment.
+- Version Control with Git & GitHub
+  - Tracks code changes, supports pull requests, and enables collaboration.
+- CI/CD Pipeline (e.g., GitHub Actions)
+  - Automatically runs linting, tests, and builds on each commit.
+  - Deploys to a hosting service (like Vercel or AWS) when changes are merged to main.
+- Hosting Platform (e.g., Vercel)
+  - Optimized for Next.js, offers instant static optimization and serverless functions.
+  - Simplifies scaling and global content delivery.
 
 ## 4. Third-Party Integrations
-While this starter kit is minimal by design, it already includes or can easily add:
 
-- **bcrypt**
-  - For secure password hashing (included as an npm dependency).
-- **NextAuth.js** (optional)
-  - A full-featured authentication library supporting email/password, OAuth, and more.
-- **Sentry or LogRocket** (optional)
-  - For real-time error tracking and performance monitoring in production.
+We rely on a few external services to avoid reinventing the wheel and provide robust features:
 
-These integrations help extend the app’s capabilities without building every feature from scratch.
+- Better Auth
+  - Secure user authentication and session management without building our own auth system.
+- Vercel AI SDK
+  - Streamlines AI model integration and function calling for chat features.
+- Optional analytics and monitoring (not yet implemented but easily added):
+  - Google Analytics, Plausible, or another analytics tool for tracking user engagement.
+  - Sentry or LogRocket for error tracking and performance monitoring.
 
 ## 5. Security and Performance Considerations
-We’ve baked in several measures to keep users safe and the app running smoothly:
 
-Security:
-- Passwords are never stored in plain text—bcrypt hashes them with a random salt.
-- API routes can implement CSRF protection and input validation to block malicious requests.
-- Session tokens or cookies are marked secure and HttpOnly to prevent theft via JavaScript.
+We want users to trust our app with their private data and enjoy a smooth experience:
 
-Performance:
-- Server-side rendering (SSR) and static site generation (SSG) in Next.js deliver pages faster.
-- Code splitting and lazy-loaded components ensure users only download what they need.
-- Global CSS and theme files are small and cached by the browser for quick repeat visits.
-
-These strategies work together to give users a fast, secure experience every time.
+- Security Measures:
+  - Authentication with Better Auth ensures only logged-in users access their data.
+  - Environment variables for secret keys (AI credentials, database URLs) kept out of source code.
+  - HTTPS enforced in production to encrypt all data in transit.
+  - Prepared statements and parameterized queries via Drizzle ORM to prevent SQL injection.
+- Performance Optimizations:
+  - Server Components in Next.js for faster initial load on data-heavy pages.
+  - Streaming responses from the AI to show chat messages in real time.
+  - Caching strategies with SWR or React Query to avoid unnecessary network calls.
+  - Tailwind’s optimized build process removes unused styles, keeping CSS bundles small.
 
 ## 6. Conclusion and Overall Tech Stack Summary
-In building **codeguide-starter**, we chose technologies that:
 
-- Align with modern web standards (Next.js, React, TypeScript).
-- Provide a clear, file-based project structure for rapid onboarding.
-- Offer built-in support for server-side rendering, API routes, and static assets.
-- Emphasize security through password hashing, session management, and safe defaults.
-- Enable easy scaling and future enhancements via modular code and optional integrations.
+The AI Schedule Auditor combines proven, modern technologies to deliver a secure, responsive, and visually consistent application:
 
-This stack strikes a balance between simplicity for newcomers and flexibility for experienced teams. It accelerates development of a secure authentication flow and a polished dashboard, while leaving room to plug in databases, test suites, and advanced features as the project grows.
+- **Frontend**: Next.js 15 + React 19 + Tailwind CSS + shadcn/ui + assistant-ui
+- **Backend**: Next.js API Routes + Better Auth + Vercel AI SDK + PostgreSQL + Drizzle ORM
+- **Infrastructure**: Docker, GitHub (Git + Actions), Vercel
+- **Security & Performance**: HTTPS, environment variables, server-side rendering, caching, streaming AI
+
+Together, these choices support our goal: a friendly, conversational AI assistant that helps users build, visualize, and optimize their daily schedules with minimal friction. Each technology was selected for its reliability, developer experience, and ability to scale as the application grows.

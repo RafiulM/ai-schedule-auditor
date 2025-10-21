@@ -1,14 +1,13 @@
 flowchart TD
-  Start[Landing Page]
-  SignUpPage[Sign Up Page]
-  SignInPage[Sign In Page]
-  AuthAPI[Authentication API Endpoint]
-  DashboardPage[Dashboard Page]
-  Start -->|Select Sign Up| SignUpPage
-  Start -->|Select Sign In| SignInPage
-  SignUpPage -->|Submit Credentials| AuthAPI
-  SignInPage -->|Submit Credentials| AuthAPI
-  AuthAPI -->|Success| DashboardPage
-  AuthAPI -->|Error| SignUpPage
-  AuthAPI -->|Error| SignInPage
-  DashboardPage -->|Click Logout| Start
+    Start[Start] --> Auth[User Authentication]
+    Auth --> ChatPage[Chat interface]
+    ChatPage --> APIChat[Call chat api]
+    APIChat --> AISDK[Vercel AI SDK]
+    AISDK --> DB[Database operations]
+    DB --> AISDK
+    AISDK --> ChatResponse[AI response]
+    ChatResponse --> ChatPage
+    ChatPage --> Dashboard[View Dashboard]
+    Dashboard --> DB
+    DB --> Dashboard
+    Dashboard --> CalendarDisplay[Render calendar and metrics]
