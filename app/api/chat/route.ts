@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { db, event, chatMessage, aiInsight } from '@/db';
@@ -47,10 +47,20 @@ export async function POST(req: Request) {
             return new Response('Invalid message format', { status: 400 });
         }
 
+        // Extract text content from message parts (AI SDK v5 format)
+        const messageContent = userMessage.parts
+            ?.filter((part: { type: string }) => part.type === 'text')
+            ?.map((part: { text: string }) => part.text)
+            ?.join('') || '';
+
+        if (!messageContent.trim()) {
+            return new Response('Invalid message content', { status: 400 });
+        }
+
         // Store user message in database
         await db.insert(chatMessage).values({
             userId,
-            message: userMessage.content,
+            message: messageContent,
             role: 'user',
             timestamp: new Date(),
         });
@@ -71,7 +81,11 @@ export async function POST(req: Request) {
             .orderBy(desc(event.date))
             .limit(20);
 
+        const currentDate = new Date().toISOString().split('T')[0];
+
         const systemPrompt = `You are an AI time management assistant and productivity coach. Your goal is to help users optimize their daily schedules and build better time management habits.
+
+Current date: ${currentDate}
 
 Key responsibilities:
 1. Extract and organize schedule events from natural language descriptions
@@ -95,12 +109,12 @@ Be encouraging, constructive, and focused on practical improvements. Always cons
         const result = streamText({
             model: openai('gpt-4o'),
             system: systemPrompt,
-            messages: messages,
+            messages: convertToModelMessages(messages),
             temperature: 0.7,
             tools: {
                 extractScheduleEvent: {
                     description: 'Extract a schedule event from the user message',
-                    parameters: scheduleEventSchema,
+                    inputSchema: scheduleEventSchema,
                     execute: async (extractedEvent) => {
                         try {
                             // Store the extracted event in database
@@ -110,7 +124,7 @@ Be encouraging, constructive, and focused on practical improvements. Always cons
                                 description: extractedEvent.description,
                                 startTime: new Date(`${extractedEvent.date}T${extractedEvent.startTime}`),
                                 endTime: new Date(`${extractedEvent.date}T${extractedEvent.endTime}`),
-                                date: new Date(extractedEvent.date),
+                                date: extractedEvent.date,
                                 type: extractedEvent.type,
                             });
 
@@ -123,7 +137,7 @@ Be encouraging, constructive, and focused on practical improvements. Always cons
                 },
                 generateInsights: {
                     description: 'Generate time management insights based on the user\'s schedule patterns',
-                    parameters: insightSchema,
+                    inputSchema: insightSchema,
                     execute: async (insights) => {
                         try {
                             // Store insights in database
@@ -132,11 +146,15 @@ Be encouraging, constructive, and focused on practical improvements. Always cons
                                     userId,
                                     insight: insight.insight,
                                     insightType: insight.type,
-                                    date: new Date(),
+                                    date: new Date().toISOString().split('T')[0],
                                 });
                             }
 
-                            return insights.insights.map(insight =>
+                            return insights.insights.map((insight: {
+                                priority: string;
+                                type: string;
+                                insight: string;
+                            }) =>
                                 `${insight.priority === 'high' ? '🔴' : insight.priority === 'medium' ? '🟡' : '🟢'} **${insight.type.replace('_', ' ')}**: ${insight.insight}`
                             ).join('\n\n');
                         } catch (error) {
@@ -146,18 +164,27 @@ Be encouraging, constructive, and focused on practical improvements. Always cons
                     },
                 },
             },
-            onFinish: async ({ text }) => {
-                // Store assistant response in database
-                await db.insert(chatMessage).values({
-                    userId,
-                    message: text,
-                    role: 'assistant',
-                    timestamp: new Date(),
-                });
-            },
         });
 
-        return result.toDataStreamResponse();
+        return result.toUIMessageStreamResponse({
+            originalMessages: messages,
+            onFinish: async ({ responseMessage }) => {
+                // Extract text from response message parts and store in database
+                const responseText = responseMessage.parts
+                    ?.filter((part: { type: string }) => part.type === 'text')
+                    ?.map((part: { text: string }) => part.text)
+                    ?.join('') || '';
+
+                if (responseText.trim()) {
+                    await db.insert(chatMessage).values({
+                        userId,
+                        message: responseText,
+                        role: 'assistant',
+                        timestamp: new Date(),
+                    });
+                }
+            },
+        });
     } catch (error) {
         console.error('Chat API error:', error);
         return new Response('Internal Server Error', { status: 500 });

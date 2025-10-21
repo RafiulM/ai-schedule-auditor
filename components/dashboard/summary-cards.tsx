@@ -9,7 +9,7 @@ import { Event } from "@/db";
 interface SummaryCardsProps {
   events: Event[];
   weeklyEvents: Event[];
-  insights: any[];
+  insights: Array<{ type: string; message: string; severity: string }>;
 }
 
 const getEventTypeColor = (type: string) => {
@@ -92,7 +92,7 @@ export function SummaryCards({ events, weeklyEvents, insights }: SummaryCardsPro
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Today's Schedule</CardTitle>
+          <CardTitle className="text-sm font-medium">Today&apos;s Schedule</CardTitle>
           <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>

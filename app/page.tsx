@@ -8,8 +8,6 @@ import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MessageSquare, Calendar, BarChart3, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { useChatRuntime } from "@assistant-ui/react";
 import { MyAssistant } from "@/components/chat-assistant";
 
 export default function Home() {
@@ -140,15 +138,13 @@ export default function Home() {
               <div className="text-center">
                 <h2 className="text-lg font-semibold mb-2">Your AI Time Management Assistant</h2>
                 <p className="text-sm text-muted-foreground">
-                  Tell me about your schedule, daily activities, or time management goals. I'll help you optimize your routine!
+                  Tell me about your schedule, daily activities, or time management goals. I&apos;ll help you optimize your routine!
                 </p>
               </div>
             </div>
 
             <div className="flex-1 overflow-hidden">
-              <AssistantRuntimeProvider runtime={useChatRuntime()}>
-                <MyAssistant />
-              </AssistantRuntimeProvider>
+              <MyAssistant />
             </div>
           </div>
         </Card>

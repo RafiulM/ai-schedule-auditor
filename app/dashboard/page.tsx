@@ -7,6 +7,7 @@ import { CalendarView } from "@/components/dashboard/calendar-view";
 import { MetricsChart } from "@/components/dashboard/metrics-chart";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { format, startOfMonth, endOfMonth, subDays } from "date-fns";
+import { headers } from "next/headers";
 
 async function getUserScheduleData(userId: string) {
   const today = new Date();
