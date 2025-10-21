@@ -1,117 +1,139 @@
-# Project Requirements Document: codeguide-starter
-
----
+# Project Requirements Document (PRD)
 
 ## 1. Project Overview
 
-The **codeguide-starter** project is a boilerplate web application that provides a ready-made foundation for any web project requiring secure user authentication and a post-login dashboard. It sets up the common building blocks—sign-up and sign-in pages, API routes to handle registration and login, and a simple dashboard interface driven by static data. By delivering this skeleton, it accelerates development time and ensures best practices are in place from day one.
+The AI Schedule Auditor is a full-stack, web-based assistant designed to help users plan, audit, and optimize their daily and weekly schedules through a natural language chat interface. Instead of juggling multiple calendars or manually entering events, users simply tell the AI what they have planned—meetings, workouts, focus blocks—and the system parses their input, stores structured events, and returns both confirmations and actionable insights.
 
-This starter kit is being built to solve the friction developers face when setting up repeated common tasks: credential handling, session management, page routing, and theming. Key objectives include: 1) delivering a fully working authentication flow (registration & login), 2) providing a gated dashboard area upon successful login, 3) establishing a clear, maintainable project structure using Next.js and TypeScript, and 4) demonstrating a clean theming approach with global and section-specific CSS. Success is measured by having an end-to-end login journey in under 200 lines of code and zero runtime type errors.
-
----
+We’re building this tool to solve two main problems: (1) the friction of manual calendar management, and (2) the lack of real-time, personalized feedback on how users spend their time. Key success criteria include seamless sign-up/sign-in, a responsive chat experience with sub-2-second reply times, accurate event parsing and storage, a clean calendar dashboard, and basic analytics (e.g., meeting density, free-time ratio) that help users spot and correct scheduling imbalances.
 
 ## 2. In-Scope vs. Out-of-Scope
 
-### In-Scope (Version 1)
-- User registration (sign-up) form with validation
-- User login (sign-in) form with validation
-- Next.js API routes under `/api/auth/route.ts` handling:
-  - Credential validation
-  - Password hashing (e.g., bcrypt)
-  - Session creation or JWT issuance
-- Protected dashboard pages under `/dashboard`:
-  - `layout.tsx` wrapping dashboard content
-  - `page.tsx` rendering static data from `data.json`
-- Global application layout in `/app/layout.tsx`
-- Basic styling via `globals.css` and `dashboard/theme.css`
-- TypeScript strict mode enabled
+### In-Scope (Version 1.0)
+- User Authentication (sign-up, sign-in, session management) via Better Auth.  
+- Natural language chat interface built with `assistant-ui` and `@ai-sdk/react`.  
+- AI Chat API (`/api/chat`) using Vercel AI SDK and GPT-4 (or GPT-4o) for parsing schedule entries.  
+- Structured data storage in PostgreSQL through Drizzle ORM (tables: `users`, `events`, `chat_messages`, `ai_insights`).  
+- Protected Dashboard route with a calendar view (e.g., `react-big-calendar` or shadcn/ui calendar component) displaying stored events.  
+- Metrics cards showing meeting density, free-time ratio, and focus blocks.  
+- Basic theming (light/dark mode) using shadcn/ui and Tailwind CSS.  
+- Docker + Docker Compose setup for local development and deployment.
 
 ### Out-of-Scope (Later Phases)
-- Integration with a real database (PostgreSQL, MongoDB, etc.)
-- Advanced authentication flows (password reset, email verification, MFA)
-- Role-based access control (RBAC)
-- Multi-tenant or white-label theming
-- Unit, integration, or end-to-end testing suites
-- CI/CD pipeline and production deployment scripts
-
----
+- Drag-and-drop event editing on the calendar.  
+- Two-way sync with external calendars (Google Calendar, Outlook).  
+- Mobile-only native apps (React Native, SwiftUI, etc.).  
+- Team or group scheduling features (shared calendars).  
+- Advanced AI suggestions (e.g., auto-rescheduling or priority reordering).
 
 ## 3. User Flow
 
-A new visitor lands on the root URL and sees a welcome page with options to **Sign Up** or **Sign In**. If they choose Sign Up, they fill in their email, password, and hit “Create Account.” The form submits to `/api/auth/route.ts`, which hashes the password, creates a new user session or token, and redirects them to the dashboard. If any input is invalid, an inline error message explains the issue (e.g., “Password too short”).
+A new user lands on the homepage and clicks “Sign Up.” They provide an email and password and verify their account. After authentication, they are redirected to the main chat page (`/chat`). Here, they type messages like “I have a team meeting at 9 AM tomorrow and a gym session at 5 PM.” The chat interface streams the AI’s response—confirming the meeting and gym session—and behind the scenes the `/api/chat` endpoint parses the text, creates structured event records in the database, and returns both text and JSON confirmations.
 
-Once authenticated, the user is taken to the `/dashboard` route. Here they see a sidebar or header defined by `dashboard/layout.tsx`, and the main panel pulls in static data from `data.json`. They can log out (if that control is present), but otherwise their entire session is managed by server-side cookies or tokens. Returning users go directly to Sign In, submit credentials, and upon success they land back on `/dashboard`. Any unauthorized access to `/dashboard` redirects back to Sign In.
-
----
+Once events are stored, the user navigates to the Dashboard (`/dashboard`). A calendar component visualizes the events by date and time. Alongside it, metric cards show a summary: number of meetings, total free time, and suggested focus blocks. If the user wants to add or adjust events, they return to the chat page, enter new details, and see updates reflected immediately on the dashboard. This loop continues as they refine their schedule.
 
 ## 4. Core Features
 
-- **Sign-Up Page (`/app/sign-up/page.tsx`)**: Form fields for email & password, client-side validation, POST to `/api/auth`.
-- **Sign-In Page (`/app/sign-in/page.tsx`)**: Form fields for email & password, client-side validation, POST to `/api/auth`.
-- **Authentication API (`/app/api/auth/route.ts`)**: Handles both registration and login based on HTTP method, integrates password hashing (bcrypt) and session or JWT logic.
-- **Global Layout (`/app/layout.tsx` + `globals.css`)**: Shared header, footer, and CSS resets across all pages.
-- **Dashboard Layout (`/app/dashboard/layout.tsx` + `dashboard/theme.css`)**: Sidebar or top nav for authenticated flows, section-specific styling.
-- **Dashboard Page (`/app/dashboard/page.tsx`)**: Reads `data.json`, renders it as cards or tables.
-- **Static Data Source (`/app/dashboard/data.json`)**: Example dataset to demo dynamic rendering.
-- **TypeScript Configuration**: `tsconfig.json` with strict mode and path aliases (if any).
+- **Authentication & Authorization**  
+  • Sign-up, sign-in, and secure session handling with Better Auth.  
+  • Protected routes (`/dashboard`, `/chat`).  
 
----
+- **Chat-Based Schedule Input**  
+  • Frontend built with `assistant-ui` components and `@ai-sdk/react` hooks.  
+  • Sends user messages to `/api/chat` and streams AI responses.  
+
+- **AI Chat API**  
+  • Next.js API route (`app/api/chat/route.ts`).  
+  • Uses Vercel AI SDK + GPT-4 (or GPT-4o) with function calling.  
+  • Parses natural language into structured JSON (fields: title, date, startTime, endTime, type).  
+
+- **Database & ORM**  
+  • PostgreSQL for persistent storage.  
+  • Drizzle ORM for type-safe schema definitions: `events`, `chat_messages`, `ai_insights`.  
+
+- **Dashboard & Calendar View**  
+  • Calendar component showing events by day/week.  
+  • Metric cards (meeting count, free-time ratio, focus blocks).  
+
+- **Insights Engine**  
+  • Server-side functions that compute simple analytics.  
+  • Stores insights in `ai_insights` table for history and trend analysis.  
+
+- **Theming & UI**  
+  • shadcn/ui component library with Tailwind CSS.  
+  • Dark mode toggle.  
+
+- **Containerization & Deployment**  
+  • Dockerfiles for the Next.js app and PostgreSQL service, plus Docker Compose.  
 
 ## 5. Tech Stack & Tools
 
-- **Framework**: Next.js (App Router) for file-based routing, SSR/SSG, and API routes.
-- **Language**: TypeScript for type safety.
-- **UI Library**: React 18 for component-based UI.
-- **Styling**: Plain CSS via `globals.css` (global reset) and `theme.css` (sectional styling). Can easily migrate to CSS Modules or Tailwind in the future.
-- **Backend**: Node.js runtime provided by Next.js API routes.
-- **Password Hashing**: bcrypt (npm package).
-- **Session/JWT**: NextAuth.js or custom JWT logic (to be decided in implementation).
-- **IDE & Dev Tools**: VS Code with ESLint, Prettier extensions. Optionally, Cursor.ai for AI-assisted coding.
+- Frontend:  
+  • Next.js 15 (App Router) with React 19.  
+  • shadcn/ui components, Tailwind CSS v4.  
 
----
+- Backend & Data:  
+  • Next.js API Routes.  
+  • Better Auth for authentication.  
+  • PostgreSQL (v14+) and Drizzle ORM.  
+
+- AI & Machine Learning:  
+  • Vercel AI SDK (function calling).  
+  • OpenAI GPT-4 or GPT-4o model.  
+
+- Tools & Infrastructure:  
+  • TypeScript for static typing.  
+  • Docker & Docker Compose.  
+  • Testing: Vitest or Jest (unit), Playwright (end-to-end).  
+
+- Optional IDE Integrations:  
+  • Cursor or Windsurf extensions for AI-powered code suggestions.  
 
 ## 6. Non-Functional Requirements
 
-- **Performance**: Initial page load under 200 ms on a standard broadband connection. API responses under 300 ms.
-- **Security**:
-  - HTTPS only in production.
-  - Proper CORS, CSRF protection for API routes.
-  - Secure password storage (bcrypt with salt).
-  - No credentials or secrets checked into version control.
-- **Scalability**: Structure must support adding database integration, caching layers, and advanced auth flows without rewiring core app.
-- **Usability**: Forms should give real-time feedback on invalid input. Layout must be responsive (mobile > 320 px).
-- **Maintainability**: Code must adhere to TypeScript strict mode. Linting & formatting enforced by ESLint/Prettier.
+- **Performance**:  
+  • Chat responses streamed within 1–2 seconds.  
+  • Dashboard page load under 300 ms (server-side render).  
 
----
+- **Security**:  
+  • HTTPS everywhere, secure HTTP headers (CSP, HSTS).  
+  • Password hashing, session cookies with `SameSite` and `Secure`.  
+  • Environment variables for secrets, no hard-coding of API keys.  
+
+- **Compliance & Privacy**:  
+  • GDPR compliance for personal data (users can delete account and data).  
+  • Data encryption at rest (PostgreSQL encryption) and in transit.  
+
+- **Usability & Accessibility**:  
+  • WCAG 2.1 AA accessibility standards.  
+  • Responsive design for desktop and tablet screens.  
+
+- **Scalability & Reliability**:  
+  • Support for 1,000+ concurrent users.  
+  • Proper error handling and retry logic on AI calls.  
 
 ## 7. Constraints & Assumptions
 
-- **No Database**: Dashboard uses only `data.json`; real database integration is deferred.
-- **Node Version**: Requires Node.js >= 14.
-- **Next.js Version**: Built on Next.js 13+ App Router.
-- **Authentication**: Assumes availability of bcrypt or NextAuth.js at implementation time.
-- **Hosting**: Targets serverless or Node.js-capable hosting (e.g., Vercel, Netlify).
-- **Browser Support**: Modern evergreen browsers; no IE11 support required.
-
----
+- Must have access to GPT-4 (or GPT-4o) via Vercel AI SDK; rate limits apply.  
+- PostgreSQL v14+ and Docker required in development environment.  
+- Assumes modern browsers (Chrome, Firefox, Safari) with ES6 support.  
+- Next.js version locked to 15.x for App Router compatibility.  
+- User’s schedule data is private—no public sharing or social features in v1.0.  
 
 ## 8. Known Issues & Potential Pitfalls
 
-- **Static Data Limitation**: `data.json` is only for demo. A real API or database will be needed to avoid stale data.
-  *Mitigation*: Define a clear interface for data fetching so swapping to a live endpoint is trivial.
+- **API Rate Limits**:  
+  • OpenAI usage may exceed free or paid tiers—monitor usage and implement exponential back-off.  
 
-- **Global CSS Conflicts**: Using global styles can lead to unintended overrides.
-  *Mitigation*: Plan to migrate to CSS Modules or utility-first CSS in Phase 2.
+- **Streaming & CORS**:  
+  • Handling SSE (Server-Sent Events) streaming in Next.js routes can be tricky; test thoroughly.  
 
-- **API Route Ambiguity**: Single `/api/auth/route.ts` handling both sign-up and sign-in could get complex.
-  *Mitigation*: Clearly branch on HTTP method (`POST /register` vs. `POST /login`) or split into separate files.
+- **Database Migrations**:  
+  • Drizzle migrations may need manual review for complex schema changes—always run in staging first.  
 
-- **Lack of Testing**: No test suite means regressions can slip in.
-  *Mitigation*: Build a minimal Jest + React Testing Library setup in an early iteration.
+- **Calendar Performance**:  
+  • Rendering hundreds of events can be slow; consider virtualization or event clustering.  
 
-- **Error Handling Gaps**: Client and server must handle edge cases (network failures, malformed input).
-  *Mitigation*: Define a standard error response schema and show user-friendly messages.
+- **Error Handling**:  
+  • AI or database failures should surface user-friendly messages in chat; log errors server-side for later debugging.  
 
----
-
-This PRD should serve as the single source of truth for the AI model or any developer generating the next set of technical documents: Tech Stack Doc, Frontend Guidelines, Backend Structure, App Flow, File Structure, and IDE Rules. It contains all functional and non-functional requirements with no ambiguity, enabling seamless downstream development.
+By following this PRD, the AI Schedule Auditor will have a clear blueprint for its first release: an intuitive chat interface backed by solid authentication, reliable data storage, basic analytics, and a user-friendly dashboard. This document leaves no ambiguity about scope, tech choices, or core flows, ensuring development can proceed smoothly and confidently.
