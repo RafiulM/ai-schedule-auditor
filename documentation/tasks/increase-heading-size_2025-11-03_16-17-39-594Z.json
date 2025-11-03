@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Locate and identify the Settings page heading element",
+    "description": "Find the TSX file containing the Settings page heading and identify the current heading element with its styling classes",
+    "details": "Navigate to the app/dashboard/page.tsx file (or related settings component) and locate the heading element that displays 'Settings' or similar page title. Document the current Tailwind CSS classes being used for font sizing (likely text-2xl, text-3xl, or text-4xl). This will serve as the baseline for the font size increase.",
+    "status": "pending",
+    "test_strategy": "Visual inspection of the current heading in the browser development environment to confirm the element location and current styling",
+    "priority": "high",
+    "ordinal": 0,
+    "task_group_id": "30e79dd0-6afb-4fb9-9b26-0c4670d64c26",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "51c21b4d-d426-4f9f-9789-33d355e10557",
+    "created_at": "2025-11-03T16:17:34.279154Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Update heading font size using Tailwind CSS utility classes",
+    "description": "Increase the font size of the identified heading element by updating the Tailwind CSS class to a larger predefined size",
+    "details": "Replace the current font size utility class (e.g., text-3xl) with a larger one from the Tailwind theme scale (e.g., text-4xl or text-5xl). Consider using responsive prefixes like 'text-4xl md:text-5xl' to ensure proper scaling across different screen sizes. Maintain consistency with the existing design system by using only predefined theme values.",
+    "status": "pending",
+    "test_strategy": "Visual verification in development environment across multiple viewport sizes (mobile, tablet, desktop) and both light/dark themes to ensure proper rendering and contrast",
+    "priority": "medium",
+    "ordinal": 1,
+    "task_group_id": "30e79dd0-6afb-4fb9-9b26-0c4670d64c26",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "60379f83-d3a1-4ec4-84eb-19f6ba39d44f",
+    "created_at": "2025-11-03T16:17:34.279163Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Adjust layout spacing and verify visual hierarchy",
+    "description": "Fine-tune surrounding margins and padding to maintain balanced layout after the font size increase",
+    "details": "Review the visual impact of the larger heading and adjust margin/padding utility classes (e.g., mb-4, mt-6) on the heading element or adjacent components if needed. Ensure the larger heading doesn't cause layout shifts or text wrapping issues. Verify that the visual hierarchy remains clear and the heading maintains appropriate contrast ratios for accessibility compliance.",
+    "status": "pending",
+    "test_strategy": "Comprehensive visual testing across different screen sizes and themes, checking for layout shifts, text wrapping, and accessibility compliance using browser dev tools",
+    "priority": "medium",
+    "ordinal": 2,
+    "task_group_id": "30e79dd0-6afb-4fb9-9b26-0c4670d64c26",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "225ebae6-6990-4aa2-8455-3dea1b72086e",
+    "created_at": "2025-11-03T16:17:34.279166Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  }
+]
