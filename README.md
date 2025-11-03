@@ -1,6 +1,6 @@
-# Codeguide Starter Fullstack
+# AI Schedule Auditor
 
-A modern web application starter template built with Next.js 15, featuring authentication, database integration, and dark mode support.
+An intelligent AI-powered schedule auditing application that helps analyze and optimize your time management with modern web technologies.
 
 ## Tech Stack
 
@@ -18,14 +18,14 @@ A modern web application starter template built with Next.js 15, featuring authe
 Before you begin, ensure you have the following:
 - Node.js 18+ installed
 - Docker and Docker Compose (for database setup)
-- Generated project documents from [CodeGuide](https://codeguide.dev/) for best development experience
+- Generated project documents with AI assistance for optimal development experience
 
 ## Getting Started
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd codeguide-starter-fullstack
+   cd ai-schedule-auditor
    ```
 
 2. **Install dependencies**
@@ -116,7 +116,7 @@ NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 ## Project Structure
 
 ```
-codeguide-starter-fullstack/
+ai-schedule-auditor/
 ├── app/                        # Next.js app router pages
 │   ├── globals.css            # Global styles with dark mode
 │   ├── layout.tsx             # Root layout with providers
@@ -230,7 +230,7 @@ npm run db:dev
 1. **Clone and setup on your server:**
    ```bash
    git clone <your-repo>
-   cd codeguide-starter-fullstack
+   cd ai-schedule-auditor
    cp .env.example .env
    ```
 
@@ -256,10 +256,10 @@ npm run db:dev
 1. **Build and push image:**
    ```bash
    # Build the image
-   docker build -t your-registry/codeguide-starter-fullstack:latest .
+   docker build -t your-registry/ai-schedule-auditor:latest .
    
    # Push to registry
-   docker push your-registry/codeguide-starter-fullstack:latest
+   docker push your-registry/ai-schedule-auditor:latest
    ```
 
 2. **Deploy using your cloud provider's container service**
@@ -326,4 +326,4 @@ This starter is optimized for AI coding agents:
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-# codeguide-starter-fullstack
+# ai-schedule-auditor

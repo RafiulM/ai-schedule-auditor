@@ -1,5 +1,5 @@
 {
-  "name": "codeguide-starter-fullstack",
+  "name": "ai-schedule-auditor",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -17,7 +17,7 @@
     "db:dev": "docker compose --profile dev up postgres-dev -d",
     "db:dev-down": "docker compose --profile dev down postgres-dev",
     "db:reset": "drizzle-kit drop && drizzle-kit push",
-    "docker:build": "docker build -t codeguide-starter-fullstack .",
+    "docker:build": "docker build -t ai-schedule-auditor .",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f"

@@ -19,9 +19,14 @@ const parkinsans = Parkinsans({
 });
 
 export const metadata: Metadata = {
-  title: "Codeguide Starter Fullstack",
+  title: "AI Schedule Auditor",
   description:
-    "A modern Next.js starter with TypeScript, TailwindCSS, shadcn/ui, Better Auth, and Drizzle ORM",
+    "An intelligent AI-powered schedule auditing application that helps analyze and optimize your time management",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/favicon-32x32.png",
+  },
 };
 
 export default function RootLayout({
