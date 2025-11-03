@@ -90,7 +90,7 @@ export default async function DashboardPage() {
     <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Schedule Dashboard</h1>
+          <h1 className="text-5xl font-bold tracking-tight mb-2">Schedule Dashboard</h1>
           <p className="text-muted-foreground">
             Manage and analyze your daily schedule and time management
           </p>
