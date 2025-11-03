@@ -6,6 +6,7 @@ import { event, chatMessage, aiInsight } from "@/db/schema/schedule";
 import { CalendarView } from "@/components/dashboard/calendar-view";
 import { MetricsChart } from "@/components/dashboard/metrics-chart";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { format, startOfMonth, endOfMonth, subDays } from "date-fns";
 import { headers } from "next/headers";
 
@@ -103,6 +104,18 @@ export default async function DashboardPage() {
         weeklyEvents={scheduleData.weeklyEvents}
         insights={scheduleData.recentInsights}
       />
+
+      {/* API Key Management */}
+      <Card className="p-8 md:p-10">
+        <CardHeader>
+          <CardTitle className="text-2xl md:text-3xl lg:text-4xl font-semibold">
+            API Key Management
+          </CardTitle>
+          <CardDescription className="text-base md:text-lg">
+            Configure your AI service API keys to enable advanced schedule analysis and natural language processing features for the AI Schedule Auditor.
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calendar View */}

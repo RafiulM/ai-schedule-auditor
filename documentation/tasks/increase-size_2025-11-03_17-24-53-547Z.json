@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Locate and Analyze API Key Management Component",
+    "description": "Identify the exact location and structure of the 'API Key Management' header component in the dashboard page to understand the current implementation and styling approach.",
+    "details": "Navigate to `app/dashboard/page.tsx` and locate the JSX code for the 'API Key Management' section. Examine the current shadcn/ui Card components being used (Card, CardHeader, CardTitle, CardDescription) and document their current className properties and Tailwind CSS utility classes. Take note of the existing text content that references '@codeguide/cli' and 'CodeGuide services' which needs to be updated to match the AI Schedule Auditor context. This analysis will inform the specific changes needed in subsequent tasks.",
+    "status": "pending",
+    "test_strategy": "Manual code inspection and documentation of current component structure and styling classes. No automated testing required for this analysis task.",
+    "priority": "high",
+    "ordinal": 0,
+    "task_group_id": "b644af02-f120-4e03-a996-bbba9358f7f1",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "087b62fe-a5d0-4edd-a74a-07b51f244385",
+    "created_at": "2025-11-03T17:24:48.648752Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Increase Visual Size and Prominence of Header Component",
+    "description": "Apply larger Tailwind CSS utility classes to increase the font size, padding, and overall visual prominence of the API Key Management header while maintaining responsive design.",
+    "details": "Modify the CardTitle component to use a larger font size class (upgrade from current size to `text-2xl` or `text-3xl`). Increase the Card component's padding from the current value to `p-8` or `p-10` for more visual breathing room. Add responsive classes like `md:text-3xl lg:text-4xl` to ensure the component scales appropriately across different screen sizes. Ensure the CardDescription text also receives appropriate sizing adjustments to maintain visual hierarchy. Test the changes across mobile, tablet, and desktop viewports to verify no layout breaks or overflow issues occur.",
+    "status": "pending",
+    "test_strategy": "Manual visual testing across multiple browser sizes (mobile: 375px, tablet: 768px, desktop: 1024px+). Verify text readability, component spacing, and overall visual balance within the dashboard layout.",
+    "priority": "high",
+    "ordinal": 1,
+    "task_group_id": "b644af02-f120-4e03-a996-bbba9358f7f1",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "594ba6f5-3241-48f7-ac3e-4c5c3afcfb22",
+    "created_at": "2025-11-03T17:24:48.648760Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Update Content to Match AI Schedule Auditor Context",
+    "description": "Replace placeholder content references to 'CodeGuide services' and '@codeguide/cli' with contextually appropriate text for the AI Schedule Auditor application.",
+    "details": "Update the CardDescription text to reflect the AI Schedule Auditor's purpose and functionality. Replace any references to 'CodeGuide services' with appropriate descriptions of AI-powered schedule management features. Ensure the text clearly communicates the value proposition of API key management within the context of the schedule auditing tool. The updated content should be concise, user-friendly, and aligned with the application's natural language processing and calendar management capabilities described in the PRD.",
+    "status": "pending",
+    "test_strategy": "Content review for clarity, accuracy, and contextual relevance. Verify that the updated text fits well within the enlarged component without causing layout issues or text overflow.",
+    "priority": "medium",
+    "ordinal": 2,
+    "task_group_id": "b644af02-f120-4e03-a996-bbba9358f7f1",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "eb4c05a7-3cd5-48d1-9f94-0550a2f0d0d1",
+    "created_at": "2025-11-03T17:24:48.648762Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  }
+]
