@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Create and integrate new AI Schedule Auditor logo",
+    "description": "Replace the existing CodeGuide logo with a new AI Schedule Auditor logo in the main navigation component",
+    "details": "Locate the current logo implementation in components/ui/sidebar.tsx (most likely location based on file size). Create or obtain an optimized SVG logo for 'AI Schedule Auditor' and place it in the public/ directory. Update the logo component to use the new SVG file and change the accompanying text from 'CodeGuide' to 'AI Schedule Auditor'. Ensure the SVG uses currentColor for fills/strokes to support both light and dark themes. Apply appropriate Tailwind CSS classes to maintain proper sizing and spacing within the existing layout.",
+    "status": "pending",
+    "test_strategy": "Visual verification across different pages (homepage, dashboard, auth pages) in both light and dark modes. Test responsiveness on mobile, tablet, and desktop viewports. Verify the logo link to homepage functionality remains intact.",
+    "priority": "high",
+    "ordinal": 0,
+    "task_group_id": "d1c6ceef-68f9-47b4-9c99-f22fff89ab7a",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "7c98c13f-c300-49a2-ab70-a06e8d4243fe",
+    "created_at": "2025-11-03T18:25:00.384148Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Update application favicon",
+    "description": "Replace the existing favicon.ico with a new favicon based on the AI Schedule Auditor branding",
+    "details": "Generate a new favicon.ico file from the AI Schedule Auditor logo, ensuring it's optimized for 16x16, 32x32, and 48x48 pixel sizes for clear display in browser tabs and bookmarks. Replace the existing app/favicon.ico file with the new favicon. Consider also adding additional favicon formats (PNG, SVG) in app/layout.tsx metadata for better browser support and high-DPI displays.",
+    "status": "pending",
+    "test_strategy": "Test favicon display in browser tabs across Chrome, Firefox, and Safari. Verify favicon appears correctly when bookmarking the site. Check favicon display on different operating systems and high-DPI displays.",
+    "priority": "medium",
+    "ordinal": 1,
+    "task_group_id": "d1c6ceef-68f9-47b4-9c99-f22fff89ab7a",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "3d5e6189-4b38-484c-a8b5-ac9b39c8236a",
+    "created_at": "2025-11-03T18:25:00.384160Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Verify global branding consistency and accessibility",
+    "description": "Perform comprehensive testing and cleanup to ensure the new branding is applied consistently across the entire application",
+    "details": "Search the entire codebase for any remaining references to 'CodeGuide' and replace with 'AI Schedule Auditor'. Update any hardcoded alt text, aria-labels, or title attributes related to the logo. Verify the logo displays correctly in all application states including loading states, error pages, and different user authentication states. Ensure proper accessibility by adding descriptive alt text for the logo image. Test the logo's contrast ratio against both light and dark backgrounds to meet WCAG 2.1 AA standards.",
+    "status": "pending",
+    "test_strategy": "Perform a full application walkthrough testing all routes (/dashboard, /chat, /sign-in, /sign-up). Use browser developer tools to inspect accessibility properties. Test with screen readers to ensure proper logo description. Verify no broken images or missing assets across the application.",
+    "priority": "medium",
+    "ordinal": 2,
+    "task_group_id": "d1c6ceef-68f9-47b4-9c99-f22fff89ab7a",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "1bf124ce-2e31-407e-a4cc-80497f7737b0",
+    "created_at": "2025-11-03T18:25:00.384163Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  }
+]
