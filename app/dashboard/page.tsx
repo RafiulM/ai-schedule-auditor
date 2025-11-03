@@ -3,9 +3,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { event, chatMessage, aiInsight } from "@/db/schema/schedule";
-import { CalendarView } from "@/components/dashboard/calendar-view";
-import { MetricsChart } from "@/components/dashboard/metrics-chart";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
+import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { format, startOfMonth, endOfMonth, subDays } from "date-fns";
 import { headers } from "next/headers";
 
@@ -92,7 +91,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Schedule Dashboard</h1>
           <p className="text-muted-foreground">
-            Manage and analyze your daily schedule and time management
+            Manage your schedule, analyze time patterns, and configure API access
           </p>
         </div>
       </div>
@@ -104,56 +103,13 @@ export default async function DashboardPage() {
         insights={scheduleData.recentInsights}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Calendar View */}
-        <CalendarView events={scheduleData.monthlyEvents} />
-
-        {/* Metrics Chart */}
-        <MetricsChart events={scheduleData.weeklyEvents} />
-      </div>
-
-      {/* Recent Activity Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Chat Messages */}
-        <div className="rounded-lg border bg-card p-6">
-          <h3 className="text-lg font-semibold mb-4">Recent Chat History</h3>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {scheduleData.recentMessages.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No chat history yet</p>
-            ) : (
-              scheduleData.recentMessages.map((message) => (
-                <div key={message.id} className="flex gap-3 text-sm">
-                  <div className={`font-medium ${message.role === 'user' ? 'text-blue-600' : 'text-green-600'}`}>
-                    {message.role === 'user' ? 'You:' : 'AI:'}
-                  </div>
-                  <div className="flex-1 text-muted-foreground line-clamp-2">
-                    {message.message}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Recent AI Insights */}
-        <div className="rounded-lg border bg-card p-6">
-          <h3 className="text-lg font-semibold mb-4">AI Insights</h3>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {scheduleData.recentInsights.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No insights yet. Start chatting with the AI!</p>
-            ) : (
-              scheduleData.recentInsights.map((insight) => (
-                <div key={insight.id} className="border-l-2 border-blue-500 pl-3">
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {format(insight.createdAt, "MMM d, yyyy")}
-                  </div>
-                  <div className="text-sm">{insight.insight}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Dashboard Tabs */}
+      <DashboardTabs
+        monthlyEvents={scheduleData.monthlyEvents}
+        weeklyEvents={scheduleData.weeklyEvents}
+        recentMessages={scheduleData.recentMessages}
+        recentInsights={scheduleData.recentInsights}
+      />
     </div>
   );
 }
