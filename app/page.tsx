@@ -6,7 +6,7 @@ import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { MessageSquare, Calendar, BarChart3, LogIn, UserPlus } from "lucide-react";
+import { MessageSquare, Calendar, BarChart3, LogIn, UserPlus, Bot } from "lucide-react";
 import Link from "next/link";
 import { MyAssistant } from "@/components/chat-assistant";
 
@@ -69,7 +69,7 @@ export default function Home() {
         </div>
 
         <main className="container mx-auto px-4 sm:px-6 pb-12 sm:pb-8 max-w-5xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
             <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200/50 dark:border-blue-700/30">
               <div className="flex items-center gap-3 mb-3">
                 <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -97,6 +97,16 @@ export default function Home() {
               </div>
               <p className="text-sm text-muted-foreground">
                 Get detailed insights about how you spend your time. Track productivity, meeting density, and find opportunities for improvement.
+              </p>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200/50 dark:border-amber-700/30">
+              <div className="flex items-center gap-3 mb-3">
+                <Bot className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                <h3 className="font-semibold text-lg">AI Configuration</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Configure AI model preferences and scheduling parameters. Customize your assistant's behavior and optimize your time management experience.
               </p>
             </Card>
           </div>
