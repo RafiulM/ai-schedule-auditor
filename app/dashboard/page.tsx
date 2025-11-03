@@ -6,6 +6,7 @@ import { event, chatMessage, aiInsight } from "@/db/schema/schedule";
 import { CalendarView } from "@/components/dashboard/calendar-view";
 import { MetricsChart } from "@/components/dashboard/metrics-chart";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
+import { calculateScheduleMetrics, generateScheduleInsights, storeInsights } from "@/lib/analytics";
 import { format, startOfMonth, endOfMonth, subDays } from "date-fns";
 import { headers } from "next/headers";
 
@@ -57,11 +58,40 @@ async function getUserScheduleData(userId: string) {
       .orderBy(desc(aiInsight.createdAt))
       .limit(5);
 
+    // Calculate analytics metrics
+    const scheduleMetrics = calculateScheduleMetrics(weeklyEvents, 'week');
+
+    // Generate new insights based on current schedule data
+    const newInsights = generateScheduleInsights(scheduleMetrics);
+
+    // Store new insights if they don't exist already today
+    const today = today.toISOString().split('T')[0];
+    const existingInsightsToday = recentInsights.filter(insight =>
+      insight.date.toISOString().split('T')[0] === today
+    );
+
+    // Only add new insights if we don't have insights for today or if we have significant new data
+    if (existingInsightsToday.length === 0 && newInsights.length > 0) {
+      try {
+        for (const insight of newInsights) {
+          await db.insert(aiInsight).values({
+            userId,
+            insight: insight.insight,
+            insightType: insight.type,
+            date: today,
+          });
+        }
+      } catch (error) {
+        console.error("Error storing new insights:", error);
+      }
+    }
+
     return {
       monthlyEvents,
       weeklyEvents,
       recentMessages,
       recentInsights,
+      scheduleMetrics,
     };
   } catch (error) {
     console.error("Error fetching user schedule data:", error);
@@ -70,6 +100,12 @@ async function getUserScheduleData(userId: string) {
       weeklyEvents: [],
       recentMessages: [],
       recentInsights: [],
+      scheduleMetrics: {
+        meetingDensity: { meetingsPerDay: 0, meetingsPerWeek: 0, averageMeetingDuration: 0, meetingTimePercentage: 0 },
+        freeTimeRatio: { totalHours: 0, scheduledHours: 0, freeHours: 0, freeTimePercentage: 0 },
+        focusBlocks: { count: 0, totalHours: 0, averageDuration: 0, focusTimePercentage: 0 },
+        productivityInsights: { mostProductiveDay: "N/A", leastProductiveDay: "N/A", peakProductivityHours: [], workLifeBalance: 50 }
+      }
     };
   }
 }
@@ -109,7 +145,10 @@ export default async function DashboardPage() {
         <CalendarView events={scheduleData.monthlyEvents} />
 
         {/* Metrics Chart */}
-        <MetricsChart events={scheduleData.weeklyEvents} />
+        <MetricsChart
+          events={scheduleData.weeklyEvents}
+          scheduleMetrics={scheduleData.scheduleMetrics}
+        />
       </div>
 
       {/* Recent Activity Section */}
