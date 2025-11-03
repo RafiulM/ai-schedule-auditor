@@ -3,9 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, PieChart, Clock, TrendingUp, Target, Zap } from "lucide-react";
+import { BarChart3, PieChart, Clock, TrendingUp, Target, Zap, Calendar, Users, Coffee } from "lucide-react";
 import { format, eachDayOfInterval, startOfWeek, endOfWeek, parseISO } from "date-fns";
 import { Event } from "@/db";
+import { ScheduleMetrics } from "@/lib/analytics";
 import {
   BarChart,
   Bar,
@@ -22,6 +23,7 @@ import {
 
 interface MetricsChartProps {
   events: Event[];
+  scheduleMetrics?: ScheduleMetrics;
 }
 
 const getEventTypeColor = (type: string) => {
@@ -38,7 +40,7 @@ const getEventTypeColor = (type: string) => {
   return colors[type as keyof typeof colors] || colors.other;
 };
 
-export function MetricsChart({ events }: MetricsChartProps) {
+export function MetricsChart({ events, scheduleMetrics }: MetricsChartProps) {
   // Calculate total hours per event type
   const eventTypeData = events.reduce((acc, event) => {
     const start = new Date(event.startTime);
@@ -113,62 +115,121 @@ export function MetricsChart({ events }: MetricsChartProps) {
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-4 w-4 text-blue-500" />
-              <h4 className="text-sm font-medium">Total Hours</h4>
-            </div>
-            <div className="text-2xl font-bold">{Math.round(totalHours * 10) / 10}h</div>
-            <p className="text-xs text-muted-foreground">
-              Across {events.length} events
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-4 w-4 text-green-500" />
-              <h4 className="text-sm font-medium">Avg Duration</h4>
-            </div>
-            <div className="text-2xl font-bold">{Math.round(averageEventDuration * 10) / 10}h</div>
-            <p className="text-xs text-muted-foreground">
-              Per event
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-purple-500" />
-              <h4 className="text-sm font-medium">Most Active</h4>
-            </div>
-            <div className="text-2xl font-bold">{mostProductiveDay.day}</div>
-            <p className="text-xs text-muted-foreground">
-              {mostProductiveDay.hours} hours
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-4 w-4 text-orange-500" />
-              <h4 className="text-sm font-medium">Work-Life Balance</h4>
-            </div>
-            <div className="space-y-2">
-              <Progress value={workPercentage} className="h-2" />
+      {/* Key Analytics Metrics */}
+      {scheduleMetrics && (
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-blue-500" />
+                <h4 className="text-sm font-medium">Meeting Density</h4>
+              </div>
+              <div className="text-2xl font-bold">{Math.round(scheduleMetrics.meetingDensity.meetingTimePercentage)}%</div>
               <p className="text-xs text-muted-foreground">
-                {Math.round(workPercentage)}% work activities
+                {scheduleMetrics.meetingDensity.meetingsPerWeek} meetings this week
               </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Coffee className="h-4 w-4 text-green-500" />
+                <h4 className="text-sm font-medium">Free Time</h4>
+              </div>
+              <div className="text-2xl font-bold">{Math.round(scheduleMetrics.freeTimeRatio.freeTimePercentage)}%</div>
+              <p className="text-xs text-muted-foreground">
+                {Math.round(scheduleMetrics.freeTimeRatio.freeHours)}h available
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-4 w-4 text-purple-500" />
+                <h4 className="text-sm font-medium">Focus Blocks</h4>
+              </div>
+              <div className="text-2xl font-bold">{scheduleMetrics.focusBlocks.count}</div>
+              <p className="text-xs text-muted-foreground">
+                {Math.round(scheduleMetrics.focusBlocks.totalHours)}h total
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="h-4 w-4 text-orange-500" />
+                <h4 className="text-sm font-medium">Most Productive</h4>
+              </div>
+              <div className="text-2xl font-bold">{scheduleMetrics.productivityInsights.mostProductiveDay}</div>
+              <p className="text-xs text-muted-foreground">
+                Peak day for productivity
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Legacy metrics fallback */}
+      {!scheduleMetrics && (
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-blue-500" />
+                <h4 className="text-sm font-medium">Total Hours</h4>
+              </div>
+              <div className="text-2xl font-bold">{Math.round(totalHours * 10) / 10}h</div>
+              <p className="text-xs text-muted-foreground">
+                Across {events.length} events
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-4 w-4 text-green-500" />
+                <h4 className="text-sm font-medium">Avg Duration</h4>
+              </div>
+              <div className="text-2xl font-bold">{Math.round(averageEventDuration * 10) / 10}h</div>
+              <p className="text-xs text-muted-foreground">
+                Per event
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-purple-500" />
+                <h4 className="text-sm font-medium">Most Active</h4>
+              </div>
+              <div className="text-2xl font-bold">{mostProductiveDay.day}</div>
+              <p className="text-xs text-muted-foreground">
+                {mostProductiveDay.hours} hours
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="h-4 w-4 text-orange-500" />
+                <h4 className="text-sm font-medium">Work-Life Balance</h4>
+              </div>
+              <div className="space-y-2">
+                <Progress value={workPercentage} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {Math.round(workPercentage)}% work activities
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Time Distribution by Type */}
       <Card>
