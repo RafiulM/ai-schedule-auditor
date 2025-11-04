@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Create comprehensive README.md structure and content",
+    "description": "Develop a professional, well-structured README.md file that serves as the primary documentation for the AI Schedule Auditor project, including project overview, features, tech stack, and getting started guide.",
+    "details": "Create a comprehensive README.md file with the following sections: 1) Project title and brief description, 2) About The Project section explaining the AI Schedule Auditor's purpose and key problems it solves, 3) Key Features bulleted list highlighting authentication, chat interface, AI parsing, dashboard, and analytics, 4) Technology Stack section listing Next.js 15, TypeScript, React, Tailwind CSS, shadcn/ui, Better Auth, PostgreSQL, and Drizzle ORM, 5) Project Structure overview showing the app/ directory structure and key components. Use proper Markdown formatting with headers, code blocks, and bullet points for readability. Include badges for build status and license if applicable.",
+    "status": "pending",
+    "test_strategy": "Review the README content for accuracy against the actual codebase structure. Verify all technology stack items are correctly listed and all feature descriptions match the PRD requirements. Check Markdown formatting renders correctly on GitHub.",
+    "priority": "high",
+    "ordinal": 0,
+    "task_group_id": "72641c51-0f78-4f8e-bfd0-138c88695da7",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "55931f67-5a7b-48df-a9ed-c6a313f4bd7a",
+    "created_at": "2025-11-04T02:49:30.334025Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Create detailed Getting Started and setup instructions",
+    "description": "Write comprehensive step-by-step instructions for local development setup, including prerequisites, installation, environment configuration, and running the development server.",
+    "details": "Add a detailed Getting Started section with: 1) Prerequisites (Node.js version, Docker, PostgreSQL), 2) Installation steps (clone repo, npm install), 3) Environment setup instructions referencing the .env.example file, 4) Database setup with Drizzle migrations, 5) Development server startup commands, 6) Verification steps to confirm the setup is working. Include platform-specific notes for Windows, macOS, and Linux where necessary. Provide troubleshooting tips for common setup issues like database connection problems or missing environment variables.",
+    "status": "pending",
+    "test_strategy": "Follow the complete setup instructions on a fresh machine or clean environment to verify all steps work correctly. Test the instructions on different operating systems if possible. Ensure all commands execute successfully and the application starts without errors.",
+    "priority": "high",
+    "ordinal": 1,
+    "task_group_id": "72641c51-0f78-4f8e-bfd0-138c88695da7",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "a5ce8f4c-c686-4c8b-a6c4-14b4e06d22ff",
+    "created_at": "2025-11-04T02:49:30.334033Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  },
+  {
+    "title": "Create .env.example file and deployment documentation",
+    "description": "Create a comprehensive .env.example file with all required environment variables and add deployment instructions to the README.",
+    "details": "Create a .env.example file containing all necessary environment variables with placeholder values: DATABASE_URL, NEXTAUTH_SECRET, OPENAI_API_KEY, BETTER_AUTH_SECRET, and any other required variables. Include comments explaining what each variable is for. Add a Deployment section to the README with: 1) Production environment variable requirements, 2) Build and deployment commands, 3) Recommended hosting platforms (Vercel for Next.js optimization), 4) Database deployment considerations, 5) Environment-specific configuration notes. Include links to official deployment guides for Next.js and the recommended hosting platforms.",
+    "status": "pending",
+    "test_strategy": "Verify the .env.example file contains all variables referenced in the codebase by searching for process.env usage. Test deployment instructions by following them in a staging environment. Ensure all environment variables are properly documented and deployment steps are complete.",
+    "priority": "medium",
+    "ordinal": 2,
+    "task_group_id": "72641c51-0f78-4f8e-bfd0-138c88695da7",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "43dff287-4e3c-449a-8851-7be374bb9cdb",
+    "created_at": "2025-11-04T02:49:30.334035Z",
+    "user_id": "user_2qaB6nlVH3R9QXhQZpt1nmVDymN",
+    "subtasks": []
+  }
+]
