@@ -1,129 +1,137 @@
 # Frontend Guideline Document
 
-This document explains how the frontend of the AI Schedule Auditor application is structured, the principles behind its design, and the tools and techniques used. It is written in everyday language, so anyone—technical or not—can follow along.
+This document lays out the frontend architecture, design principles, and technologies used in the AI Schedule Auditor project. It’s written in clear everyday language so anyone can understand how the frontend is set up, why decisions were made, and how to work with it.
 
 ## 1. Frontend Architecture
 
-### Framework and Libraries
-- **Next.js 15 (App Router)**: Serves as the backbone. It supports both server-rendered and client-rendered components, giving us flexibility to optimize performance.
-- **React 19**: The main UI library. We use it to build interactive components like the chat interface and calendar.
-- **shadcn/ui**: A set of prebuilt, accessible React components styled with Tailwind CSS. It ensures a consistent look and feel across the app.
-- **Tailwind CSS v4**: A utility-first CSS framework for rapid styling without writing long custom stylesheets.
-- **TypeScript**: Adds type safety, catching errors early and making code easier to understand.
+### Frameworks and Libraries
+- **Next.js 15 (App Router)**: Handles routing, server-side rendering (SSR), and client-side rendering (CSR) in one framework.
+- **React 19**: Powers reusable UI components and stateful logic.
+- **shadcn/ui**: A headless component library built on Tailwind CSS for consistent, accessible UI elements.
+- **Tailwind CSS v4**: Provides utility-first styling for rapid, responsive design.
+- **@ai-sdk/react & assistant-ui**: Offer ready-made chat components for the AI conversation interface.
+- **SWR (or React Query)** (implied): Manages client-side data fetching and caching.
 
-### How It Supports Scalability, Maintainability, and Performance
-- **Server and Client Components**: Heavy data fetching (dashboard) runs on the server for speed, while interactive parts (chat) run in the browser for responsiveness.
-- **Modular Folder Structure**: Features live under `/app`, shared UI bits under `/components`, and database logic under `/db`. This separation keeps code easy to find and change.
-- **API Routes in Next.js**: Backend logic (like the chat endpoint) lives alongside frontend code, enabling tight integration and fewer external dependencies.
-- **Code Splitting and Lazy Loading**: Next.js automatically splits bundles. We can also lazy-load components (e.g., the calendar) so users only download what they need.
+### Supporting Scalability, Maintainability, and Performance
+- **Server Components & Client Components**: Next.js splits logic where it runs best, reducing bundle size and improving load times.
+- **Code Splitting**: Automatic in Next.js—each page only loads what it needs.
+- **Modular Structure**: Pages, components, and utilities are in dedicated folders (`app/`, `components/`, `lib/`), making it easy to find, update, and extend code.
+- **Type Safety**: TypeScript across the board (including Drizzle ORM schemas) reduces bugs and makes refactoring safer.
 
 ## 2. Design Principles
 
-We follow these core principles to create a user-friendly interface:
-
-1. **Usability**: Every button, form, and interaction is designed to be straightforward. For example, chat messages clearly show when the assistant is typing or processing.
-2. **Accessibility**: We use semantic HTML, ARIA labels, focus outlines, and ensure color contrast meets WCAG standards. This makes the app usable for people with disabilities.
-3. **Responsiveness**: The layout adapts to screens of all sizes. On mobile, the calendar stacks vertically; on desktop, it sits alongside metrics cards.
-4. **Clarity**: Information is grouped logically. The chat area, schedule view, and metrics each have distinct spaces so users aren’t overwhelmed.
+### Key Principles
+- **Usability**: Simple, conversational chat interface—no complex forms to fill.
+- **Accessibility**: Components from shadcn/ui follow WAI-ARIA guidelines, and Tailwind’s classes make it easy to maintain color contrast.
+- **Responsiveness**: Layouts adapt gracefully from mobile to desktop using Tailwind’s responsive utilities.
+- **Consistency**: A shared component library and theme ensures a familiar look and behavior everywhere.
 
 ### Applying These Principles
-- Forms and buttons have clear labels and error messages.
-- Interactive elements (like calendar events) have hover and focus states.
-- The color palette and font choices maintain readability.
+- **Chat Interface**: Clear message bubbles, consistent padding, and an obvious input area.
+- **Dashboard**: Card layouts and charts adjust to screen size; keyboard navigation and semantic HTML tags support screen readers.
+- **Forms and Buttons**: Uniform styling and focus states make interactive elements easy to spot and use.
 
 ## 3. Styling and Theming
 
 ### Styling Approach
-- **Tailwind CSS**: Utility classes (e.g., `p-4`, `text-gray-700`, `bg-primary-500`) let us style components directly in the markup, avoiding long external CSS files.
-- **No CSS-in-JS**: All styling is done via Tailwind, ensuring consistent performance and easy theming.
-
-### CSS Methodology
-- We rely on Tailwind’s utility-first approach rather than BEM or SMACSS. This results in fewer naming conflicts and faster iteration.
+- **Utility-First with Tailwind CSS**: Compose UI directly in JSX with Tailwind classes for margin, padding, colors, and typography.
+- **No Additional CSS Methodology**: Relying on Tailwind avoids custom BEM or SMACSS overhead.
+- **Dark Mode Support**: Class-based dark mode (`.dark`) configured in `tailwind.config.js`.
 
 ### Theming
-- **Dark Mode Support**: Built in via a `dark:` variant in Tailwind. Users can switch between light and dark themes, and the preference is saved in localStorage.
+- **Theme Provider**: Defined at `app/layout.tsx` to wrap the app and allow light/dark toggling.
+- **Global Tokens**: Colors, spacing, and typography live in `tailwind.config.js` so they’re easy to update.
 
 ### Visual Style
-- **Modern Flat Design with Glassmorphism Touches**: Clean, minimal shapes with occasional translucent panels (e.g., chat background) to add depth.
+- Clean, **modern flat design** with subtle shadows and rounded corners.
+- Slight **glassmorphism** effect on the chat panel (semi-transparent background + backdrop blur).
 
 ### Color Palette
-- Primary: #4F46E5 (indigo-600)
-- Secondary: #10B981 (emerald-500)
-- Accent: #F59E0B (amber-500)
-- Neutral Light: #F3F4F6 (gray-100)
-- Neutral Dark: #1F2937 (gray-800)
-- Danger: #EF4444 (red-500)
+- Primary: `#4F46E5` (indigo-600)
+- Primary Light: `#EEF2FF` (indigo-100)
+- Primary Dark: `#4338CA` (indigo-700)
+- Secondary: `#22D3EE` (cyan-400)
+- Accent: `#FACC15` (yellow-400)
+- Background: `#FFFFFF` (light mode), `#111827` (dark mode)
+- Surface/Card: `#F3F4F6` (gray-100), `#1F2937` (gray-800)
+- Text: `#111827` (gray-900), `#E5E7EB` (gray-200 in dark)
 
-### Typography
-- **Font Family**: Inter, for its readability and modern feel.
-- Headings: 600 weight
-- Body Text: 400 weight
+### Fonts
+- **Inter** (variable): A clean, legible sans-serif font loaded globally.
 
 ## 4. Component Structure
 
 ### Organization
-- `/app`: Contains top-level routes (e.g., `/chat`, `/dashboard`, plus `layout.tsx`).
-- `/components`: Houses shared UI parts.
-  - `/components/ui`: shadcn/ui overrides and wrappers.
-  - `/components/ScheduleCalendar.tsx`: Custom calendar for the dashboard.
-  - `/components/MetricCard.tsx`: Displays user metrics (e.g., meeting density).
+- **`app/`**: Page folders follow Next.js App Router conventions, each with its own `page.tsx` and optionally `layout.tsx` and `loading.tsx`.
+- **`components/`**:
+  - **`chat-assistant.tsx`**: Client component for the AI chat interface.
+  - **`dashboard/`**: Subfolder with `calendar-view.tsx`, `metrics-chart.tsx`, and `summary-cards.tsx`.
+  - **`ui/`**: Shadcn/ui building blocks (buttons, inputs, modals) customized for this project.
+  - **`auth-buttons.tsx`**: Sign-in, sign-up, and sign-out controls.
 
-### Reusability and Maintainability
-- Each component does one thing. For example, `MetricCard` only renders a title, value, and optional chart.
-- Props define data inputs, making components easy to test and reuse.
-- Styles are scoped via Tailwind classes, so changes in one component don’t ripple unexpectedly.
+### Reusability
+- Common UI elements (buttons, cards, form controls) are in `components/ui/`—import these rather than rebuilding styles.
+- Dashboard components share layout utilities (grid, flex) to stay consistent.
+
+### Benefits of Component-Based Architecture
+- **Maintainability**: Fix or update one component, and every place that uses it updates automatically.
+- **Testability**: Isolated components are easier to unit-test.
+- **Speed**: Developers pick from a library of pre-built pieces rather than starting from scratch.
 
 ## 5. State Management
 
 ### Approach
-- **Local State**: React’s `useState` and `useReducer` for UI-specific states (e.g., toggling dark mode).
-- **Global/Shared State**: React Context for theme and authentication info.
-- **Server Data**: Next.js data fetching (server components) or **SWR**/**React Query** for client-side caching and revalidation.
+- **Local State**: Chat input and UI toggles via React’s `useState` or `useReducer` inside client components.
+- **Server State**: Fetched schedule and event data managed by **SWR** (or React Query), with caching, revalidation, and optimistic updates when creating events.
 
-### Chat and Schedule Flow
-1. User sends a message in the chat (client state).
-2. The message is POSTed to `/api/chat`.
-3. The AI response streams back; we update the local message list.
-4. On successful function calls, we revalidate the schedule data via SWR to refresh the calendar view.
+### Sharing State
+- Custom hooks (e.g., `useScheduleData`) wrap SWR calls and expose data, loading, and error states to multiple components.
+- Context API is available for global settings (e.g., theme, user session) but used sparingly to avoid overuse.
 
 ## 6. Routing and Navigation
 
-- **Next.js App Router**: File-based routing under `/app` directory.
-- Pages:
-  - `/chat/page.tsx`: The main chat interface (Client Component).
-  - `/dashboard/page.tsx`: The schedule and metrics view (Server Component).
-  - `/api/chat/route.ts`: Backend endpoint handling AI requests.
-- **Navigation**: Next.js `Link` component for client-side transitions and prefetching.
-- **Layout**: A shared header and sidebar in `layout.tsx` for consistent navigation.
+### Routing
+- **Next.js App Router**: File-based routing under `app/`. Each folder with `page.tsx` becomes a route.
+- **API Routes**: Under `app/api/`, routes like `/api/chat` handle server logic.
+
+### Navigation Structure
+- **Global Layout** (`app/layout.tsx`): Wraps pages with header, footer, and theme provider.
+- **Header/Nav Bar**: Links to Dashboard (`/dashboard`), Chat (`/dashboard` or integrated), and Sign-in/Sign-out.
+- **Protected Routes**: Middleware or server checks redirect unauthenticated users to `/sign-in`.
 
 ## 7. Performance Optimization
 
-- **React Server Components**: Offload data fetching to the server for faster first paint.
-- **Image and Asset Optimization**: Next.js Image component & built-in asset hashing.
-- **Tailwind Purge**: Removes unused CSS in production.
-- **Lazy Loading**: Dynamic imports for heavy components like charts or the calendar.
-- **Caching**: SWR/React Query caches schedule data and avoids redundant requests.
+### Strategies
+- **Lazy Loading**: Components that aren’t needed immediately (charts, calendar) are dynamically imported.
+- **Image Optimization**: Next.js `<Image>` component automatically resizes and lazy-loads images.
+- **Code Splitting**: Built into Next.js so each route only ships its own code.
+- **CSS Purging**: Tailwind’s JIT removes unused utility classes from production builds.
+
+### Impact on User Experience
+- Faster initial load and interactive times.
+- Reduced bandwidth usage, especially on mobile.
+- Smooth transitions when navigating between pages.
 
 ## 8. Testing and Quality Assurance
 
-### Test Types
-- **Unit Tests**: Vitest or Jest with React Testing Library for component logic.
-- **Integration Tests**: Test interactions between components, such as chat input → API call → message list update.
-- **End-to-End Tests**: Playwright to simulate user flows: sign-in, send a chat message, see it in the calendar.
+### Testing Strategies
+- **Unit Tests**: Use **Vitest** or **Jest** to test individual React components and utility functions.
+- **Integration Tests**: Verify how components work together (e.g., chat-assistant sends message to API). 
+- **End-to-End (E2E) Tests**: Tools like **Playwright** or **Cypress** simulate real user flows: sign-in, chat, calendar updates.
+- **Visual Regression**: Use **Storybook** + **Chromatic** to catch unintended UI changes.
 
-### Tools and Configurations
-- **ESLint**: Lint code for style and common errors.
-- **Prettier**: Auto-formatting for consistent code style.
-- **CI Pipeline**: Run linting, tests, and type checks on every push.
+### Tools and Frameworks
+- **ESLint** & **Prettier**: Enforce code style and catch syntax errors.
+- **TypeScript**: Type checks at build time.
+- **GitHub Actions**: Run linting, type checks, and tests on every pull request.
+- **Sentry** (optional): For runtime error monitoring in production.
 
 ## 9. Conclusion and Overall Frontend Summary
 
-To recap:
-- We use **Next.js 15** with **React 19** for a hybrid rendering approach that balances performance and interactivity.
-- **shadcn/ui** + **Tailwind CSS** power our modern, accessible design, with a flat aesthetic and subtle glassmorphism.
-- A **component-based structure** keeps code modular and easy to maintain.
-- **Context, SWR, and server components** manage state and data fetching smoothly.
-- We optimize performance through server rendering, code splitting, and asset optimization.
-- A testing strategy covering unit, integration, and end-to-end tests ensures reliability.
+The AI Schedule Auditor frontend combines modern web best practices with a clear structure:
+- **Next.js** and **React** for flexible rendering.
+- **Tailwind CSS** and **shadcn/ui** for a consistent, accessible design system.
+- **AI Chat UI** to capture user input naturally.
+- **SWR** for smooth data loading and cache management.
 
-This setup aligns perfectly with the goal of building an AI-powered schedule auditor: fast, scalable, and user-friendly. Whether you’re adding new features or tweaking the UI, these guidelines will help you navigate the frontend codebase with confidence.
+These guidelines ensure the application is easy to understand, maintain, and extend. By following them, developers can keep the interface fast, reliable, and user-friendly while aligning with the project’s goal of making schedule management simple and intelligent.
