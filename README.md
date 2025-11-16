@@ -323,6 +323,10 @@ This starter is optimized for AI coding agents:
 - **Modern authentication** patterns
 - **Database schema** examples
 
+## Author
+
+Created and maintained by [RafiulM](https://github.com/RafiulM).
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

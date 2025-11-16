@@ -1,139 +1,155 @@
-# Project Requirements Document (PRD)
+# AI Schedule Auditor – Project Requirements Document (PRD)
 
 ## 1. Project Overview
 
-The AI Schedule Auditor is a full-stack, web-based assistant designed to help users plan, audit, and optimize their daily and weekly schedules through a natural language chat interface. Instead of juggling multiple calendars or manually entering events, users simply tell the AI what they have planned—meetings, workouts, focus blocks—and the system parses their input, stores structured events, and returns both confirmations and actionable insights.
+**AI Schedule Auditor** is a full-stack web application that lets users manage, audit, and optimize their personal schedules through a simple chat interface. Instead of filling out forms or jumping between apps, you just tell the AI what you want—like “Schedule a meeting with Sarah next Monday at 2 PM for 30 minutes”—and behind the scenes the system extracts all the details as structured events. Those events are then stored in a database and displayed on a calendar and analytics dashboard.
 
-We’re building this tool to solve two main problems: (1) the friction of manual calendar management, and (2) the lack of real-time, personalized feedback on how users spend their time. Key success criteria include seamless sign-up/sign-in, a responsive chat experience with sub-2-second reply times, accurate event parsing and storage, a clean calendar dashboard, and basic analytics (e.g., meeting density, free-time ratio) that help users spot and correct scheduling imbalances.
+This project aims to remove friction from schedule management and give actionable insights on how you spend your time. By combining natural language understanding (using GPT-4/GPT-4o via the Vercel AI SDK) with a clean UI (Next.js, React, Tailwind CSS), the app will let users quickly capture events, visualize their week or month, and eventually get efficiency recommendations. Success will be measured by: 1) parsing accuracy of extracted events, 2) chat response times under 1 second on average, 3) user adoption and retention metrics, and 4) system uptime of 99.9% or higher.
 
 ## 2. In-Scope vs. Out-of-Scope
 
 ### In-Scope (Version 1.0)
-- User Authentication (sign-up, sign-in, session management) via Better Auth.  
-- Natural language chat interface built with `assistant-ui` and `@ai-sdk/react`.  
-- AI Chat API (`/api/chat`) using Vercel AI SDK and GPT-4 (or GPT-4o) for parsing schedule entries.  
-- Structured data storage in PostgreSQL through Drizzle ORM (tables: `users`, `events`, `chat_messages`, `ai_insights`).  
-- Protected Dashboard route with a calendar view (e.g., `react-big-calendar` or shadcn/ui calendar component) displaying stored events.  
-- Metrics cards showing meeting density, free-time ratio, and focus blocks.  
-- Basic theming (light/dark mode) using shadcn/ui and Tailwind CSS.  
-- Docker + Docker Compose setup for local development and deployment.
+- **Natural Language Chat Interface**: Users can type or paste schedule details in plain English.
+- **AI-Driven Event Extraction**: GPT-4/GPT-4o function calling extracts `eventName`, `date`, `time`, `duration`, `location`, etc.
+- **User Authentication & Sessions**: Secure sign-up, sign-in, and session handling via Better Auth.
+- **Data Persistence**: Store users, sessions, chat history, and events in PostgreSQL via Drizzle ORM.
+- **Calendar View**: A responsive month/week calendar component showing extracted events.
+- **Metrics Dashboard**: Simple charts and summary cards (e.g., total hours, event counts).
+- **Basic Error Handling**: Clear feedback on parsing failures or API errors.
+- **Containerized Local Dev & Cloud Deployment**: Docker Compose locally; Vercel production.
 
-### Out-of-Scope (Later Phases)
-- Drag-and-drop event editing on the calendar.  
-- Two-way sync with external calendars (Google Calendar, Outlook).  
-- Mobile-only native apps (React Native, SwiftUI, etc.).  
-- Team or group scheduling features (shared calendars).  
-- Advanced AI suggestions (e.g., auto-rescheduling or priority reordering).
+### Out-of-Scope (Planned for Later Phases)
+- Recurring events or series scheduling.
+- Conflict detection or automatic rescheduling suggestions.
+- Push notifications, email reminders, or SMS alerts.
+- Native mobile apps (iOS/Android).
+- Integrations with external calendars (Google Calendar, Outlook).
+- Advanced productivity analytics (e.g., unproductive time blocks, workload balancing).
+- User feedback loop for AI corrections (thumbs up/down on parsing accuracy).
 
 ## 3. User Flow
 
-A new user lands on the homepage and clicks “Sign Up.” They provide an email and password and verify their account. After authentication, they are redirected to the main chat page (`/chat`). Here, they type messages like “I have a team meeting at 9 AM tomorrow and a gym session at 5 PM.” The chat interface streams the AI’s response—confirming the meeting and gym session—and behind the scenes the `/api/chat` endpoint parses the text, creates structured event records in the database, and returns both text and JSON confirmations.
+When a new user lands on the site, they see a clean landing page with a “Sign Up” or “Sign In” button. After creating an account (or logging in), they’re taken to the **Dashboard**, which has a top navigation bar, a left-side menu (for “Calendar,” “Metrics,” “Settings”), and a main content area showing the current month’s calendar and summary cards (total events, total hours). A chat icon or panel sits in the bottom-right corner, inviting the user to “Tell me about your schedule.”
 
-Once events are stored, the user navigates to the Dashboard (`/dashboard`). A calendar component visualizes the events by date and time. Alongside it, metric cards show a summary: number of meetings, total free time, and suggested focus blocks. If the user wants to add or adjust events, they return to the chat page, enter new details, and see updates reflected immediately on the dashboard. This loop continues as they refine their schedule.
+The user clicks the chat panel and types something like: “Add a 1-hour call with Marketing team tomorrow at 3 PM at Zoom.” The chat UI sends this message to the backend API, which authenticates the session, calls GPT-4o with function definitions, gets back structured event data, and writes it to the database. The chat then displays a confirmation (“Done! I’ve added ‘Call with Marketing team’ on [date] at 3 PM.”). The user closes the chat, refreshes (or waits for live update), and sees the new event appear on the calendar and reflected in the metrics.
 
 ## 4. Core Features
 
-- **Authentication & Authorization**  
-  • Sign-up, sign-in, and secure session handling with Better Auth.  
-  • Protected routes (`/dashboard`, `/chat`).  
+- **Authentication Module**
+  • Sign-up / Sign-in forms using Better Auth.
+  • Session cookies / tokens with secure HTTP-only flags.
 
-- **Chat-Based Schedule Input**  
-  • Frontend built with `assistant-ui` components and `@ai-sdk/react` hooks.  
-  • Sends user messages to `/api/chat` and streams AI responses.  
+- **Chat Interface Component**
+  • Based on `@ai-sdk/react` and `assistant-ui`.
+  • Sends user messages to `/api/chat` and streams AI responses.
 
-- **AI Chat API**  
-  • Next.js API route (`app/api/chat/route.ts`).  
-  • Uses Vercel AI SDK + GPT-4 (or GPT-4o) with function calling.  
-  • Parses natural language into structured JSON (fields: title, date, startTime, endTime, type).  
+- **AI Function Calling**
+  • Define `create_event` function schema for GPT-4o.
+  • Extract event fields: name, date, time, duration, location.
+  • Graceful fallback when extraction fails.
 
-- **Database & ORM**  
-  • PostgreSQL for persistent storage.  
-  • Drizzle ORM for type-safe schema definitions: `events`, `chat_messages`, `ai_insights`.  
+- **API Route: `/api/chat`**
+  • Authenticate user.
+  • Forward messages to Vercel AI SDK.
+  • Persist chat and event data via Drizzle ORM.
+  • Return structured replies.
 
-- **Dashboard & Calendar View**  
-  • Calendar component showing events by day/week.  
-  • Metric cards (meeting count, free-time ratio, focus blocks).  
+- **Dashboard Components**
+  • `calendar-view.tsx`: Month/week grid showing events.
+  • `metrics-chart.tsx`: Bar/pie charts for time distribution.
+  • `summary-cards.tsx`: Key stats (total events, busiest day).
 
-- **Insights Engine**  
-  • Server-side functions that compute simple analytics.  
-  • Stores insights in `ai_insights` table for history and trend analysis.  
+- **Database Layer**
+  • PostgreSQL tables: `users`, `sessions`, `chat_messages`, `events`.
+  • Drizzle ORM for type-safe queries and migrations.
 
-- **Theming & UI**  
-  • shadcn/ui component library with Tailwind CSS.  
-  • Dark mode toggle.  
+- **Styling & UI Library**
+  • Tailwind CSS v4 utility classes.
+  • shadcn/ui for buttons, modals, form inputs.
 
-- **Containerization & Deployment**  
-  • Dockerfiles for the Next.js app and PostgreSQL service, plus Docker Compose.  
+- **Deployment & DevOps**
+  • Docker Compose for local containers (app + Postgres).
+  • Vercel serverless functions, edge caching, and CI/CD.
 
 ## 5. Tech Stack & Tools
 
-- Frontend:  
-  • Next.js 15 (App Router) with React 19.  
-  • shadcn/ui components, Tailwind CSS v4.  
+- **Frontend**
+  • Next.js 15 (App Router)
+  • React 19
+  • Tailwind CSS v4
+  • shadcn/ui component library
+  • `@ai-sdk/react`, `assistant-ui` for chat UI
+  • SWR or React Query (data fetching)
 
-- Backend & Data:  
-  • Next.js API Routes.  
-  • Better Auth for authentication.  
-  • PostgreSQL (v14+) and Drizzle ORM.  
+- **Backend**
+  • Next.js API Routes (`app/api/chat/route.ts`)
+  • Better Auth (auth and session management)
+  • Drizzle ORM (PostgreSQL adapter)
+  • PostgreSQL (data persistence)
 
-- AI & Machine Learning:  
-  • Vercel AI SDK (function calling).  
-  • OpenAI GPT-4 or GPT-4o model.  
+- **AI Integration**
+  • Vercel AI SDK with GPT-4 / GPT-4o
+  • Function calling for structured data extraction
 
-- Tools & Infrastructure:  
-  • TypeScript for static typing.  
-  • Docker & Docker Compose.  
-  • Testing: Vitest or Jest (unit), Playwright (end-to-end).  
-
-- Optional IDE Integrations:  
-  • Cursor or Windsurf extensions for AI-powered code suggestions.  
+- **Dev & Deployment**
+  • Docker & Docker Compose (local dev)
+  • Vercel for production (serverless + edge)
+  • GitHub Actions (CI) implicitly via Vercel
+  • Recommended IDE: VS Code with docker, Tailwind, and ESLint plugins
 
 ## 6. Non-Functional Requirements
 
-- **Performance**:  
-  • Chat responses streamed within 1–2 seconds.  
-  • Dashboard page load under 300 ms (server-side render).  
+- **Performance**: 
+  • Chat API response shipped within 1 second (target).
+  • Page load (First Contentful Paint) under 2 seconds.
 
-- **Security**:  
-  • HTTPS everywhere, secure HTTP headers (CSP, HSTS).  
-  • Password hashing, session cookies with `SameSite` and `Secure`.  
-  • Environment variables for secrets, no hard-coding of API keys.  
+- **Security**:
+  • HTTPS everywhere; secure, HTTP-only session cookies.
+  • Encryption for data at rest (PostgreSQL) and in transit.
+  • OWASP Top 10 considerations (XSS, CSRF, SQL Injection) addressed via framework defaults and input validation.
 
-- **Compliance & Privacy**:  
-  • GDPR compliance for personal data (users can delete account and data).  
-  • Data encryption at rest (PostgreSQL encryption) and in transit.  
+- **Usability & Accessibility**:
+  • WCAG 2.1 AA compliance for core flows.
+  • Responsive design for desktop/tablet screens.
+  • Clear error messages and loading states.
 
-- **Usability & Accessibility**:  
-  • WCAG 2.1 AA accessibility standards.  
-  • Responsive design for desktop and tablet screens.  
+- **Reliability**:
+  • 99.9% uptime SLA on production.
+  • Automated alerts for failures via Vercel.
 
-- **Scalability & Reliability**:  
-  • Support for 1,000+ concurrent users.  
-  • Proper error handling and retry logic on AI calls.  
+- **Scalability**:
+  • Handle up to 10,000 monthly active users initially.
+  • Plan for horizontal scaling of serverless functions.
 
 ## 7. Constraints & Assumptions
 
-- Must have access to GPT-4 (or GPT-4o) via Vercel AI SDK; rate limits apply.  
-- PostgreSQL v14+ and Docker required in development environment.  
-- Assumes modern browsers (Chrome, Firefox, Safari) with ES6 support.  
-- Next.js version locked to 15.x for App Router compatibility.  
-- User’s schedule data is private—no public sharing or social features in v1.0.  
+- **AI Model Availability**: Assumes GPT-4o (function calling) is accessible via Vercel AI SDK.
+- **English-only Input**: MVP supports natural language in English.
+- **Deploy Environment**: Production on Vercel; local dev via Docker.
+- **No External Calendar Access**: MVP does not integrate with Google/Outlook APIs.
+- **Database**: PostgreSQL instance must be provisioned separately (e.g., Vercel Postgres).
 
 ## 8. Known Issues & Potential Pitfalls
 
-- **API Rate Limits**:  
-  • OpenAI usage may exceed free or paid tiers—monitor usage and implement exponential back-off.  
+- **API Rate Limits & Costs**:
+  • OpenAI/GPT calls have usage costs and rate limits.
+  • Mitigation: implement per-user rate limiting, caching repeated queries, and fallback messages if limits are hit.
 
-- **Streaming & CORS**:  
-  • Handling SSE (Server-Sent Events) streaming in Next.js routes can be tricky; test thoroughly.  
+- **Parsing Ambiguities**:
+  • Users may phrase dates/times unclearly ("next Monday" vs. exact date).
+  • Mitigation: add disambiguation prompts ("Did you mean April 3rd?") or simple client-side date picker fallback.
 
-- **Database Migrations**:  
-  • Drizzle migrations may need manual review for complex schema changes—always run in staging first.  
+- **AI Errors & Bias**:
+  • Incorrect extractions could lead to bad data.
+  • Mitigation: validate returned fields server-side (e.g., date format checks) and display error states.
 
-- **Calendar Performance**:  
-  • Rendering hundreds of events can be slow; consider virtualization or event clustering.  
+- **Database Migrations**:
+  • Schema changes require careful Drizzle migrations.
+  • Mitigation: adopt a versioned migration strategy and test upgrades in staging.
 
-- **Error Handling**:  
-  • AI or database failures should surface user-friendly messages in chat; log errors server-side for later debugging.  
+- **Network Latency**:
+  • Multiple round trips (chat UI → API → AI model → DB).
+  • Mitigation: stream AI responses, show optimistic UI updates in chat, and batch DB writes when possible.
 
-By following this PRD, the AI Schedule Auditor will have a clear blueprint for its first release: an intuitive chat interface backed by solid authentication, reliable data storage, basic analytics, and a user-friendly dashboard. This document leaves no ambiguity about scope, tech choices, or core flows, ensuring development can proceed smoothly and confidently.
+---
+This PRD provides a clear, unambiguous blueprint of the AI Schedule Auditor MVP. All core requirements, boundaries, user journeys, and potential risks are outlined so that subsequent technical documents (Tech Stack Details, Frontend Guidelines, Backend Architecture, etc.) can be created confidently without additional clarifications.
