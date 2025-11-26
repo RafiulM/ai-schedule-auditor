@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Draft Comprehensive README.md",
+    "description": "Create a detailed README.md file for the AI Schedule Auditor project, covering all essential aspects for developers and users.",
+    "details": "Write a README.md that includes:\n- Project overview and purpose\n- Key features (chat interface, AI event extraction, calendar view, metrics dashboard, authentication, etc.)\n- Tech stack (Next.js, React, Tailwind CSS, Drizzle ORM, PostgreSQL, Vercel AI SDK, etc.)\n- Setup instructions (local development with Docker Compose, production deployment on Vercel)\n- Usage instructions (how to sign up, use chat, view calendar, etc.)\n- Contribution guidelines (if applicable)\n- License and contact information\nEnsure the README is clear, concise, and formatted with Markdown best practices. Use headings, bullet points, and code blocks where appropriate.",
+    "status": "pending",
+    "test_strategy": "Review the README for completeness, clarity, and accuracy. Verify that all sections are present and instructions are correct. Optionally, have a team member follow the setup and usage instructions to ensure they work as described.",
+    "priority": "high",
+    "ordinal": 0,
+    "task_group_id": "34745880-5d9b-41ae-8413-a5c665fcb08d",
+    "parent_task_id": null,
+    "ai_result": null,
+    "id": "4f235fb2-9f86-4b90-9379-3d240be48af7",
+    "created_at": "2025-11-26T06:14:11.745730Z",
+    "user_id": "user_2yhesfpa5IDelC7UxShblIKQJIb",
+    "subtasks": []
+  }
+]

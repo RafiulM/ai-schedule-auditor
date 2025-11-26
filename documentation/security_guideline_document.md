@@ -1,178 +1,147 @@
 # Security Guidelines for AI Schedule Auditor
 
-This document outlines security best practices and design principles tailored for the **AI Schedule Auditor** project. It encompasses guidelines for authentication, input handling, data protection, API security, web application hardening, infrastructure configuration, and dependency management. Follow these recommendations to build a resilient, scalable, and secure application by design.
+This document outlines security standards and best practices tailored to the **AI Schedule Auditor** full-stack application. It aligns with industry principles—Security by Design, Least Privilege, Defense in Depth—and addresses the specific architecture, technologies, and workflows of this repository.
 
 ---
 
-## 1. Overview & Security Objectives
+## 1. Security by Design & Governance
 
-- **Purpose**: Protect user schedules, chat history, and AI-generated insights from unauthorized access and data leakage.  
-- **Scope**: Covers Next.js 15 App Router frontend, Next.js API routes backend, Better Auth integration, PostgreSQL + Drizzle ORM, Vercel AI SDK, Docker deployments.
-- **Goals**:
-  - Enforce strong authentication and authorization.  
-  - Validate and sanitize all user input.  
-  - Encrypt sensitive data at rest and in transit.  
-  - Harden APIs and web interfaces.  
-  - Secure infrastructure and CI/CD pipelines.
+- **Embed security early:** Integrate security reviews into every sprint and pull request. Use threat modeling to identify risks in AI function calling, chat flows, and database interactions.
+- **Secure defaults:** Ship all components (Next.js, PostgreSQL, Docker, Vercel) with hardened configurations. Disable debug modes in production (`NEXT_PUBLIC_VERCEL_ENV` checks).
+- **Least privilege:** Grant minimal permissions:
+  - Database users can only read/write specific schemas (`auth`, `schedule`).
+  - Vercel serverless functions run with a restricted IAM role.
+- **Defense in depth:** Combine multiple controls at each layer—network (TLS), application (input validation), database (row-level security).
 
 ---
 
-## 2. Architecture Security Review
+## 2. Authentication & Access Control
 
-- **Next.js App Router**:
-  - Server Components for data-heavy pages (e.g., dashboard) should fetch data server-side under an authenticated session.  
-  - Client Components (chat UI) must never expose secrets or direct database calls.
-- **API Routes**:
-  - All routes under `/api/*` must enforce authentication and authorization.  
-  - Use middleware (`middleware.ts`) to guard protected endpoints.
-- **Better Auth**:
-  - Leverage session-based or JWT-based flows with secure cookies (`HttpOnly`, `Secure`, `SameSite=Strict`).
-- **Database Layer**:
-  - Drizzle ORM with PostgreSQL: use least-privileged DB user, parameterized queries, and limit DB permissions.
-- **AI Integration**:
-  - Vercel AI SDK function calls must validate and sanitize inputs/outputs before persisting to the database.
+### 2.1 Robust Authentication
+- Use **Better Auth** with:
+  - Strong password policy: minimum 12 characters, mixed case, digits, symbols.
+  - Secure hashing: Argon2 or bcrypt (configured in Better Auth). Unique salts per user.
+- Enforce **Multi-Factor Authentication (MFA)** for privileged or admin accounts via TOTP (email or authenticator apps).
 
----
+### 2.2 Session Management
+- Generate unpredictable session tokens. Store cookies with `HttpOnly`, `Secure`, `SameSite=Strict`.
+- Implement idle (e.g., 15 min) and absolute (e.g., 24 h) timeouts in sessions.
+- On logout, revoke sessions in database and invalidate tokens.
 
-## 3. Authentication & Access Control
-
-1. **User Authentication**:
-   - Enforce strong password policies: minimum length 12+, complexity rules, and unique salts.  
-   - Store passwords with Argon2 or bcrypt (cost factor tuned for your environment).  
-   - Protect sign-in and sign-up API routes with rate limiting (e.g., 5 attempts per IP per hour).
-2. **Session Management**:
-   - Use secure, unpredictable session identifiers (e.g., `crypto.randomBytes`).  
-   - Set idle and absolute session timeouts (e.g., idle: 15 min, absolute: 24 h).  
-   - Invalidate sessions on logout and password change.  
-   - Protect against session fixation: regenerate session ID on login.
-3. **Role-Based Access Control (RBAC)**:
-   - Define `roles` (e.g., `user`, `admin`).  
-   - Enforce server-side checks in each API route (e.g., `if (!session.user || session.user.role !== 'admin') throw 403`).
-4. **Multi-Factor Authentication (MFA)** *(optional but recommended)*:
-   - Offer TOTP or SMS-based second factors for account-sensitive actions.
+### 2.3 Role-Based Access Control (RBAC)
+- Define roles: `user`, `admin`, `auditor`.
+- Server-side check in every API route (`app/api/chat`, schedule endpoints) to ensure only authorized roles can perform sensitive operations (e.g., deleting events, system audits).
+- Use middleware in Next.js App Router to validate tokens and permissions.
 
 ---
 
-## 4. Input Handling & Processing
+## 3. Input Validation & Output Encoding
 
-1. **Server-Side Validation**:
-   - Never trust client-side checks. Validate all inputs on API routes using a schema validation library (e.g., Zod, Yup).
-2. **Prevent Injection**:
-   - Use Drizzle ORM’s query builders or parameterized queries to avoid SQL injection.  
-   - Sanitize any user-supplied strings before passing to AI prompts or DB writes.
-3. **Cross-Site Scripting (XSS)**:
-   - Encode all user-generated content in React, especially in chat messages and custom dashboard fields.  
-   - Enable a strict Content Security Policy via `next.config.js` headers.
-4. **Secure Redirects**:
-   - Validate any `redirectTo` query parameter against a whitelist of internal routes.
-5. **File Uploads** *(if applicable)*:
-   - Validate MIME types and file size, store outside the webroot, and scan for malware.
+### 3.1 Chat & AI Function Input
+- Sanitize chat messages to strip control characters before passing to LLM.
+- Validate structured parameters returned from function calling:
+  - Date format (ISO 8601), time zones.
+  - Duration within acceptable bounds (e.g., 5 min–24 h).
+  - String lengths and allowed characters for event name/location.
 
----
+### 3.2 Preventing Injection Attacks
+- Use **Drizzle ORM** with parameterized queries exclusively—never interpolate raw values.
+- Escape user-supplied values in any SQL or command contexts.
 
-## 5. Data Protection & Privacy
-
-1. **Encryption in Transit**:
-   - Enforce TLS 1.2+ for all HTTP traffic. Redirect HTTP → HTTPS via HSTS header (`Strict-Transport-Security`).
-2. **Encryption at Rest**:
-   - Enable disk-level encryption for production database volumes.  
-   - If storing sensitive user notes or attachments, encrypt fields using AES-256.
-3. **Secrets Management**:
-   - Avoid hardcoding secrets. Load API keys, DB credentials, and JWT signing keys from environment variables or a secrets manager (e.g., AWS Secrets Manager, HashiCorp Vault).
-4. **Logging & Masking**:
-   - Exclude PII (personal meetings, event details) from logs.  
-   - Mask sensitive fields (e.g., email local-part) if you must log them.
-5. **Data Retention & Deletion**:
-   - Implement GDPR/CCPA workflows: allow users to export or delete their data.  
-   - Purge old chat messages or insights after a configurable retention period.
+### 3.3 XSS & Template Injection
+- In React/Next.js, do not use `dangerouslySetInnerHTML` on untrusted content.
+- Use context-aware encoding via built-in React escaping.
+- Define a strict **Content Security Policy (CSP)** header:
+  ```
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' data:; frame-ancestors 'none';
+  ```
 
 ---
 
-## 6. API & Service Security
+## 4. Data Protection & Privacy
 
-1. **HTTPS Enforcement**:
-   - Use `redirect: true` in Next.js rewrites or a reverse proxy to enforce HTTPS.
-2. **Rate Limiting**:
-   - Apply rate limiting on critical endpoints (`/api/auth`, `/api/chat`) via middleware (e.g., `express-rate-limit` or a Next.js-aware solution).
-3. **CORS Configuration**:
-   - Restrict `Access-Control-Allow-Origin` to known front-end domains.  
-   - Disallow wildcard origins on stateful endpoints.
-4. **Minimal Data Exposure**:
-   - Design API responses to only return needed fields. Avoid returning full user or DB objects.
-5. **HTTP Method Enforcement**:
-   - Use `GET` for reads, `POST` for writes, `PUT/PATCH` for updates, `DELETE` for removals. Reject unexpected methods with `405 Method Not Allowed`.
-6. **API Versioning**:
-   - Prefix routes with `/api/v1/` to manage breaking changes.
+### 4.1 Encryption
+- **In transit:** Enforce HTTPS (TLS 1.2+) for all origins. Redirect HTTP to HTTPS in Vercel config.
+- **At rest:** Enable PostgreSQL encryption (e.g., AWS RDS encryption) and disk encryption for Docker volumes.
 
----
+### 4.2 Secrets Management
+- Do **not** hardcode API keys, DB credentials, or AI service tokens. Use:
+  - Vercel Environment Variables (encrypted).
+  - Docker secrets for local development.
+  - Optionally, integrate AWS Secrets Manager or Vault for production.
 
-## 7. Web Application Security Hygiene
-
-1. **Security Headers** (configured via `next.config.js`):
-   - `Content-Security-Policy`: limit script sources to self and trusted CDNs.  
-   - `X-Content-Type-Options: nosniff`  
-   - `X-Frame-Options: DENY`  
-   - `Referrer-Policy: strict-origin-when-cross-origin`
-2. **CSRF Protection**:
-   - Use anti-CSRF tokens for state-altering requests. Next-Auth or custom middleware can issue/verify tokens.
-3. **Secure Cookies**:
-   - Set `Secure`, `HttpOnly`, and `SameSite=Strict` on all session cookies.
-4. **Avoid Client-Side Secret Storage**:
-   - Never store API keys or tokens in `localStorage` or `sessionStorage`.
-5. **Subresource Integrity (SRI)**:
-   - When loading third-party scripts or styles (if any), use `integrity` and `crossorigin` attributes.
+### 4.3 Sensitive Data Handling
+- Avoid storing PII in logs. Mask or truncate any personal identifiers in chat transcripts.
+- Implement a **data deletion** workflow for user-initiated account removal: cascade delete chat history, events, and sessions.
+- Comply with GDPR/CCPA: inform users about data retention, provide export and erase mechanisms.
 
 ---
 
-## 8. Infrastructure & Configuration Management
+## 5. API & Service Security
 
-1. **Environment Separation**:
-   - Maintain isolated environments: development, staging, production with separate credentials and DB instances.
-2. **Docker Hardening**:
-   - Use minimal base images (e.g., `node:18-alpine`).  
-   - Run containers as non-root users.  
-   - Pin image digests in `docker-compose.yml` to prevent supply chain risks.
-3. **Server & OS Hardening**:
-   - Disable unused ports and services, remove default accounts.  
-   - Implement host-based firewalls (e.g., AWS Security Groups, iptables).
-4. **TLS Configuration**:
-   - Support only TLS 1.2+ and strong cipher suites.  
-   - Renew certificates via an automated process (e.g., Let’s Encrypt with Certbot).
-5. **Disable Debug in Production**:
-   - Ensure `NODE_ENV=production` and remove any verbose error logging or diagnostic endpoints.
+### 5.1 Secure API Endpoints
+- **TLS only:** All `/api/*` routes served over HTTPS.
+- **Rate limiting & throttling:** Implement at the edge or via middleware (e.g., Next.js Rate Limit package) for `/api/chat` to mitigate brute-force and DoS.
+- **CORS:** Restrict origins to your frontend domains:
+  ```js
+  // Example Next.js middleware
+  export function middleware(req) {
+    const origin = req.headers.get('origin')
+    if (origin !== 'https://yourapp.com') return new Response(null, { status: 403 })
+  }
+  ```
 
----
-
-## 9. Dependency Management
-
-1. **Secure Dependencies**:
-   - Vet all NPM packages; prefer well-maintained libraries (Better Auth, Drizzle, Vercel SDK).  
-   - Remove unused packages to reduce attack surface.
-2. **Lockfiles & Auditing**:
-   - Commit `package-lock.json` or `yarn.lock`.  
-   - Integrate `npm audit` and SCA tools (e.g., Snyk, GitHub Dependabot) into CI/CD.
-3. **Regular Updates**:
-   - Schedule dependency updates and review release notes for security patches.
-4. **Transitive Dependency Checks**:
-   - Scan for vulnerabilities in both direct and transitive dependencies.
+### 5.2 Input Sanitization in APIs
+- Re-validate user identity (`getUser()` or `getSession()`) on every request.
+- Use a schema validation library (e.g., Zod) for JSON payloads in API routes.
 
 ---
 
-## 10. Monitoring & Incident Response
+## 6. Web Application Security Hygiene
 
-- **Logging & Alerting**:
-  - Centralize logs (e.g., ELK stack, Datadog) and set alerts for anomalous behaviors (failed logins, rate-limit triggers).  
-- **Audit Trails**:
-  - Record critical events (login, data exports, admin actions) with timestamp, user ID, IP.
-- **Incident Response Plan**:
-  - Define roles and procedures for breach detection, containment, and notification.
-- **Penetration Testing**:
-  - Conduct regular security assessments and fix findings promptly.
+- **CSRF Protection:** Use anti-CSRF tokens for all state-changing POST/PUT/DELETE forms and fetch requests. NextAuth/Better Auth may provide built-in utilities.
+- **Security Headers:** Configure in `next.config.js` headers array:
+  - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
+  - `X-Content-Type-Options: nosniff`
+  - `Referrer-Policy: no-referrer-when-downgrade`
+  - `X-Frame-Options: DENY`
+- **Secure Cookies:** All cookies set with `Secure`, `HttpOnly`, and `SameSite=Strict`.
+- **Subresource Integrity (SRI):** When importing external scripts (e.g., CDN for Tailwind), include integrity hashes.
 
 ---
 
-## 11. Conclusion & Next Steps
+## 7. Infrastructure & Configuration Management
 
-By embedding these security controls at every layer—application code, infrastructure, and development processes—you ensure the **AI Schedule Auditor** remains robust against emerging threats. Prioritize implementing authentication hardening, input validation, and encryption in the initial sprints. Integrate automated audits and keep dependencies up-to-date. Review and iterate on your security posture as the application evolves.
+- **Hardened Docker Images:** Use minimal base images (e.g., `node:alpine`), run as non-root user.
+- **Port Exposure:** Only expose necessary ports (3000 for app, 5432 for DB behind network firewall).
+- **Automatic Updates:** Scan and update OS packages and npm dependencies regularly. Leverage Dependabot or Snyk.
+- **Disable Dev Features in Prod:** Ensure `NEXT_PUBLIC_VERCEL_ENV !== 'development'` to disable verbose logging and React devtools.
 
-**Stay vigilant and secure by design.**
+---
+
+## 8. Dependency Management
+
+- **Software Composition Analysis (SCA):** Integrate tools like Snyk or GitHub Dependabot to detect CVEs in dependencies (`drizzle-orm`, `@ai-sdk/react`, `shadcn/ui`).
+- **Lockfiles:** Commit `package-lock.json`/`yarn.lock` and `Pipfile.lock` if applicable to ensure deterministic builds.
+- **Minimize Footprint:** Audit your dependencies; remove unused packages (e.g., unused analytics scripts).
+
+---
+
+## 9. Logging, Monitoring & Incident Response
+
+- **Centralized Logging:** Ship application logs to a secure service (e.g., Sentry, Datadog). Scrub sensitive data before logging.
+- **Alerting:** Configure alerts on error rate spikes, rate limit breaches, or anomalous authentication events.
+- **Incident Playbook:** Document steps for handling data breaches, compromised secrets, or unauthorized access.
+
+---
+
+## 10. Testing & Validation
+
+- **Automated Tests:** Write unit tests for utility functions and integration tests for API routes using **Vitest** or **Jest**.
+- **Penetration Testing:** Conduct periodic security assessments and automated scanning (e.g., OWASP ZAP).
+- **Continuous Integration:** Incorporate linting, type checks, SCA scans, and security tests into CI pipeline on every PR.
+
+---
+
+## Conclusion
+By adhering to these guidelines, the AI Schedule Auditor application will maintain a robust security posture throughout development, deployment, and production operations. Regularly revisit and update these practices to adapt to new threats and evolving project requirements.

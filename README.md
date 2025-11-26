@@ -1,40 +1,64 @@
-# Codeguide Starter Fullstack
+# AI Schedule Auditor
 
-A modern web application starter template built with Next.js 15, featuring authentication, database integration, and dark mode support.
+A modern web application that transforms how you manage your schedule through natural language interaction with an AI assistant. Instead of traditional calendar interfaces, simply chat with an AI to add events, audit your time usage, and receive personalized productivity insights.
 
-## Tech Stack
+## ✨ Key Features
 
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router with Turbopack)
-- **Language:** TypeScript
-- **Authentication:** [Better Auth](https://better-auth.com/)
-- **Database:** [Drizzle ORM](https://orm.drizzle.team/) with PostgreSQL
-- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (New York style)
-- **Theme System:** [next-themes](https://github.com/pacocoursey/next-themes)
-- **Icons:** [Lucide React](https://lucide.dev/)
+- 🤖 **AI Chat Assistant** - Natural language interface powered by GPT-4o for schedule management
+- 📅 **Smart Calendar View** - Visual calendar with color-coded event types
+- 📊 **Analytics Dashboard** - Time allocation metrics and productivity insights
+- 🔐 **Secure Authentication** - User accounts with Better Auth
+- 💾 **Persistent Storage** - PostgreSQL database with Drizzle ORM
+- 🌙 **Dark Mode** - Full dark mode support with system preference detection
+- 📱 **Responsive Design** - Mobile-first design with Tailwind CSS v4
+- 🚀 **Real-time Updates** - Live chat streaming with Vercel AI SDK
 
-## Prerequisites
+## 🛠 Tech Stack
+
+### Frontend
+- **Next.js 15** with App Router and Turbopack
+- **React 19** for user interface components
+- **TypeScript** for type safety
+- **Tailwind CSS v4** for styling
+- **shadcn/ui** component library (40+ pre-built components)
+- **@ai-sdk/react** and **assistant-ui** for chat interface
+- **Lucide React** for icons
+
+### Backend & AI
+- **Next.js API Routes** for serverless functions
+- **Better Auth** for authentication and session management
+- **Drizzle ORM** with PostgreSQL adapter
+- **Vercel AI SDK** with OpenAI GPT-4o
+- **Zod** for schema validation
+
+### Database
+- **PostgreSQL** as primary data store
+- **Drizzle Kit** for database migrations and studio
+
+### Development & Deployment
+- **Docker & Docker Compose** for local development
+- **Vercel** for production deployment
+
+## 🚀 Getting Started
+
+### Prerequisites
 
 Before you begin, ensure you have the following:
 - Node.js 18+ installed
 - Docker and Docker Compose (for database setup)
-- Generated project documents from [CodeGuide](https://codeguide.dev/) for best development experience
+- OpenAI API key (for AI functionality)
 
-## Getting Started
+### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd codeguide-starter-fullstack
+   git clone https://github.com/RafiulM/ai-schedule-auditor.git
+   cd ai-schedule-auditor
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
    ```
 
 3. **Environment Variables Setup**
@@ -42,113 +66,78 @@ Before you begin, ensure you have the following:
      ```bash
      cp .env.example .env
      ```
-   - The default values work with Docker setup, modify as needed
+   - Edit `.env` with your configuration:
+     ```env
+     # Database Configuration (defaults work with Docker)
+     DATABASE_URL=postgresql://postgres:postgres@localhost:5433/postgres
+     POSTGRES_DB=postgres
+     POSTGRES_USER=postgres
+     POSTGRES_PASSWORD=postgres
+
+     # Authentication
+     BETTER_AUTH_SECRET=your_secret_key_here
+     BETTER_AUTH_URL=http://localhost:3000
+     NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+
+     # OpenAI Configuration
+     OPENAI_API_KEY=your_openai_api_key_here
+     ```
 
 4. **Start the development server**
    ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   ```
-
-5. **Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.**
-
-## Configuration
-
-### Option 1: Docker Setup (Recommended)
-1. **Start PostgreSQL with Docker:**
-   ```bash
+   # Start PostgreSQL with Docker
    npm run db:up
-   ```
-   This starts PostgreSQL in a Docker container with default credentials.
 
-2. **Push database schema:**
-   ```bash
+   # Push database schema
    npm run db:push
+
+   # Start the development server
+   npm run dev
    ```
 
-### Option 2: Local Database Setup
-1. Create a PostgreSQL database locally
-2. Update your environment variables in `.env`:
-   ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/database_name
-   POSTGRES_DB=your_database_name
-   POSTGRES_USER=your_username
-   POSTGRES_PASSWORD=your_password
-   ```
-3. Run database migrations:
-   ```bash
-   npm run db:push
-   ```
+5. **Open [http://localhost:3000](http://localhost:3000)** with your browser
 
-## Environment Variables
+## 📖 Usage
 
-Create a `.env` file in the root directory with the following variables:
+### 1. Sign Up / Sign In
+- Create a new account or sign in to access the AI assistant
+- Your data is securely stored and associated with your account
 
-```env
-# Database Configuration (defaults work with Docker)
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/postgres
-POSTGRES_DB=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
+### 2. Chat with AI Assistant
+Once logged in, you can interact with the AI assistant using natural language:
 
-# Authentication
-BETTER_AUTH_SECRET=your_secret_key_here
-BETTER_AUTH_URL=http://localhost:3000
-NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
-```
+**Add Events:**
+- "Schedule a team meeting tomorrow at 2 PM for 1 hour"
+- "Add gym workout every Monday and Thursday at 6 AM"
+- "I have a doctor's appointment next Friday at 10:30 AM"
 
-## Features
+**Get Insights:**
+- "How much time did I spend in meetings this week?"
+- "What's my productivity pattern like?"
+- "Suggest ways to optimize my schedule"
 
-- 🔐 Authentication with Better Auth (email/password)
-- 🗄️ PostgreSQL Database with Drizzle ORM
-- 🎨 40+ shadcn/ui components (New York style)
-- 🌙 Dark mode with system preference detection
-- 🚀 App Router with Server Components and Turbopack
-- 📱 Responsive design with TailwindCSS v4
-- 🎯 Type-safe database operations
-- 🔒 Modern authentication patterns
-- 🐳 Full Docker support with multi-stage builds
-- 🚀 Production-ready deployment configuration
+### 3. View Calendar & Analytics
+- Navigate to the Dashboard to see your schedule in calendar format
+- View analytics to understand time allocation patterns
+- Color-coded events for different categories (meetings, work, personal, etc.)
 
-## Project Structure
+### 4. AI-Generated Insights
+The AI provides personalized recommendations based on:
+- Your time allocation patterns
+- Meeting density and scheduling conflicts
+- Productivity trends
+- Work-life balance analysis
 
-```
-codeguide-starter-fullstack/
-├── app/                        # Next.js app router pages
-│   ├── globals.css            # Global styles with dark mode
-│   ├── layout.tsx             # Root layout with providers
-│   └── page.tsx               # Main page
-├── components/                # React components
-│   └── ui/                    # shadcn/ui components (40+)
-├── db/                        # Database configuration
-│   ├── index.ts              # Database connection
-│   └── schema/               # Database schemas
-├── docker/                    # Docker configuration
-│   └── postgres/             # PostgreSQL initialization
-├── hooks/                     # Custom React hooks
-├── lib/                       # Utility functions
-│   ├── auth.ts               # Better Auth configuration
-│   └── utils.ts              # General utilities
-├── auth-schema.ts            # Authentication schema
-├── docker-compose.yml        # Docker services configuration
-├── Dockerfile                # Application container definition
-├── drizzle.config.ts         # Drizzle configuration
-└── components.json           # shadcn/ui configuration
-```
+## 🗄 Database Schema
 
-## Database Integration
+The application uses the following main tables:
 
-This starter includes modern database integration:
+- **events** - Stores schedule events with title, description, start/end times, and type
+- **chat_messages** - Logs conversation history between user and AI
+- **ai_insights** - Stores AI-generated insights and recommendations
+- **users/sessions** - Authentication data managed by Better Auth
 
-- **Drizzle ORM** for type-safe database operations
-- **PostgreSQL** as the database provider
-- **Better Auth** integration with Drizzle adapter
-- **Database migrations** with Drizzle Kit
-
-## Development Commands
+## 🛠 Development Commands
 
 ### Application
 - `npm run dev` - Start development server with Turbopack
@@ -159,112 +148,20 @@ This starter includes modern database integration:
 ### Database
 - `npm run db:up` - Start PostgreSQL in Docker
 - `npm run db:down` - Stop PostgreSQL container
-- `npm run db:dev` - Start development PostgreSQL (port 5433)
-- `npm run db:dev-down` - Stop development PostgreSQL
 - `npm run db:push` - Push schema changes to database
 - `npm run db:generate` - Generate Drizzle migration files
 - `npm run db:studio` - Open Drizzle Studio (database GUI)
 - `npm run db:reset` - Reset database (drop all tables and recreate)
-
-### Styling with shadcn/ui
-- Pre-configured with 40+ shadcn/ui components in New York style
-- Components are fully customizable and use CSS variables for theming
-- Automatic dark mode support with next-themes integration
-- Add new components: `npx shadcn@latest add [component-name]`
 
 ### Docker
 - `npm run docker:build` - Build application Docker image
 - `npm run docker:up` - Start full application stack (app + database)
 - `npm run docker:down` - Stop all containers
 - `npm run docker:logs` - View container logs
-- `npm run docker:clean` - Stop containers and clean up volumes
 
-## Docker Development
+## 🚀 Deployment
 
-### Quick Start with Docker
-```bash
-# Start the entire stack (recommended for new users)
-npm run docker:up
-
-# View logs
-npm run docker:logs
-
-# Stop everything
-npm run docker:down
-```
-
-### Development Workflow
-```bash
-# Option 1: Database only (develop app locally)
-npm run db:up          # Start PostgreSQL
-npm run dev            # Start Next.js development server
-
-# Option 2: Full Docker stack
-npm run docker:up      # Start both app and database
-```
-
-### Docker Services
-
-The `docker-compose.yml` includes:
-
-- **postgres**: Main PostgreSQL database (port 5432)
-- **postgres-dev**: Development database (port 5433) - use `--profile dev`
-- **app**: Next.js application container (port 3000)
-
-### Docker Profiles
-
-```bash
-# Start development database on port 5433
-docker-compose --profile dev up postgres-dev -d
-
-# Or use the npm script
-npm run db:dev
-```
-
-## Deployment
-
-### Production Deployment
-
-#### Option 1: Docker Compose (VPS/Server)
-
-1. **Clone and setup on your server:**
-   ```bash
-   git clone <your-repo>
-   cd codeguide-starter-fullstack
-   cp .env.example .env
-   ```
-
-2. **Configure environment variables:**
-   ```bash
-   # Edit .env with production values
-   DATABASE_URL=postgresql://postgres:your_secure_password@postgres:5432/postgres
-   POSTGRES_DB=postgres
-   POSTGRES_USER=postgres
-   POSTGRES_PASSWORD=your_secure_password
-   BETTER_AUTH_SECRET=your-very-secure-secret-key
-   BETTER_AUTH_URL=https://yourdomain.com
-   NEXT_PUBLIC_BETTER_AUTH_URL=https://yourdomain.com
-   ```
-
-3. **Deploy:**
-   ```bash
-   npm run docker:up
-   ```
-
-#### Option 2: Container Registry (AWS/GCP/Azure)
-
-1. **Build and push image:**
-   ```bash
-   # Build the image
-   docker build -t your-registry/codeguide-starter-fullstack:latest .
-   
-   # Push to registry
-   docker push your-registry/codeguide-starter-fullstack:latest
-   ```
-
-2. **Deploy using your cloud provider's container service**
-
-#### Option 3: Vercel + External Database
+### Production Deployment on Vercel
 
 1. **Deploy to Vercel:**
    ```bash
@@ -272,58 +169,85 @@ npm run db:dev
    vercel
    ```
 
-2. **Add environment variables in Vercel dashboard:**
+2. **Add Environment Variables in Vercel Dashboard:**
    - `DATABASE_URL`: Your managed PostgreSQL connection string
    - `BETTER_AUTH_SECRET`: Generate a secure secret
    - `BETTER_AUTH_URL`: Your Vercel deployment URL
+   - `NEXT_PUBLIC_BETTER_AUTH_URL`: Your Vercel deployment URL
+   - `OPENAI_API_KEY`: Your OpenAI API key
 
-3. **Setup database:**
+3. **Setup Database:**
    ```bash
    # Push schema to your managed database
    npm run db:push
    ```
 
-### Environment Variables for Production
+### Docker Deployment
 
-```env
-# Required for production
-DATABASE_URL=postgresql://user:password@host:port/database
-BETTER_AUTH_SECRET=generate-a-very-secure-32-character-key
-BETTER_AUTH_URL=https://yourdomain.com
+1. **Configure environment variables** with production values
+2. **Deploy:**
+   ```bash
+   npm run docker:up
+   ```
 
-# Optional optimizations
-NODE_ENV=production
-```
+## 🎨 Event Types
 
-### Production Considerations
+The application supports the following event categories, each with its own color:
 
-- **Database**: Use managed PostgreSQL (AWS RDS, Google Cloud SQL, etc.)
-- **Security**: Generate strong secrets, use HTTPS
-- **Performance**: Enable Next.js output: 'standalone' for smaller containers
-- **Monitoring**: Add logging and health checks
-- **Backup**: Regular database backups
-- **SSL**: Terminate SSL at load balancer or reverse proxy
+- 🔵 **Meeting** - Professional meetings and calls
+- 🟢 **Work** - Focused work sessions
+- 🟡 **Focus** - Deep work or study sessions
+- 🔴 **Break** - Rest and relaxation periods
+- 🟠 **Exercise** - Physical activities and workouts
+- 🟣 **Meal** - Breakfast, lunch, dinner
+- ⚪ **Personal** - Personal activities and appointments
+- 🔘 **Other** - Miscellaneous events
 
-### Health Checks
+## 🔒 Security Features
 
-The application includes basic health checks. You can extend them:
+- Secure authentication with Better Auth
+- Session-based authentication with secure cookies
+- Type-safe database operations with Drizzle ORM
+- Environment variable configuration for sensitive data
+- SQL injection prevention with parameterized queries
 
-```dockerfile
-# In Dockerfile, add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
-```
+## 📱 Responsive Design
 
-## AI Coding Agent Integration
+- Mobile-first approach with Tailwind CSS
+- Optimized for desktop, tablet, and mobile devices
+- Touch-friendly interface elements
+- Adaptive layouts for different screen sizes
 
-This starter is optimized for AI coding agents:
+## 🤝 Contributing
 
-- **Clear file structure** and naming conventions
-- **TypeScript integration** with proper type definitions
-- **Modern authentication** patterns
-- **Database schema** examples
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Contributing
+## 📄 License
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-# codeguide-starter-fullstack
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+If you encounter any issues or have questions:
+
+1. Check the existing [Issues](https://github.com/RafiulM/ai-schedule-auditor/issues)
+2. Create a new issue with detailed information
+3. Include steps to reproduce any bugs
+
+## 🗺 Project Roadmap
+
+- [ ] Mobile app development
+- [ ] Integration with Google Calendar and Outlook
+- [ ] Advanced analytics and reporting
+- [ ] Team collaboration features
+- [ ] AI-powered scheduling recommendations
+- [ ] Time tracking integration
+- [ ] Multi-language support
+
+---
+
+Built with ❤️ by [Rafiul Islam](https://github.com/RafiulM)
