@@ -1,165 +1,188 @@
-# Backend Structure Document
+# Backend Structure Document for AI Schedule Auditor
 
 ## 1. Backend Architecture
 
-Our backend is built on the Next.js App Router, leveraging its API routes for all server-side logic. We use familiar design patterns to keep the code organized and maintainable:
+The backend is built on Next.js API Routes, combining serverless functions with a modern JavaScript/TypeScript stack. Key design choices include:
 
-- **API Route Handlers**: Each feature has its own endpoint file under `/app/api`, following RESTful conventions. 
-- **Modular Services**: Business logic lives in standalone modules (for example, an `aiService` or `scheduleService`) that API routes call. This separation makes it easy to add or replace features without affecting unrelated parts.
-- **ORM Layer**: Drizzle ORM provides a type-safe, query builder layer between our Node.js code and PostgreSQL. It ensures compile-time checks on table and column names.
-
-This setup supports:
-
-- **Scalability**: Next.js API routes can be deployed serverlessly or on containers. Drizzle and PostgreSQL scale independently, and queries are optimized with indexes.
-- **Maintainability**: Clear directory structure, modular services, and TypeScript typings help developers understand and update code quickly.
-- **Performance**: We use server-side rendering only where needed (dashboard data), while real-time chat interactions happen in client components, keeping latency low.
+-  **Framework & Serverless Functions**: 
+   - Next.js App Router powers both pages and API endpoints under `/app/api`.  
+   - Each API route runs as a lightweight serverless function, scaling automatically.
+-  **Modular Layers & Design Patterns**:
+   - Routes layer (`app/api`) handles HTTP requests and authentication.  
+   - Service layer (inside API routes) manages business logic (e.g., AI calls, validation).  
+   - Data layer (`db/` with Drizzle ORM) abstracts database interactions with type-safe queries.
+-  **Scalability & Performance**:
+   - Serverless functions spin up on demand, so the backend scales to match traffic.  
+   - Cold starts are minimized by Vercel’s edge network.  
+   - Caching strategies (e.g., edge caching for static data, SWR on the client) speed up repeated fetches.  
+-  **Maintainability**:
+   - Clear separation of concerns: routing, business logic, data access, and utilities.  
+   - Type-safe code with TypeScript and Drizzle ORM prevents many runtime errors.  
+   - Environment configurations (via `.env`) centralize secrets and connection strings.
 
 ## 2. Database Management
 
-We chose PostgreSQL (a relational SQL database) for its reliability and strong querying capabilities. Key points:
+All persistent data lives in PostgreSQL, an industry-standard relational database. Data management practices include:
 
-- **Drizzle ORM**: A TypeScript-first ORM that generates SQL under the hood. It prevents runtime errors by validating table and column names at build time.
-- **Data Organization**:
-  - `users`: authentication and profile data
-  - `schedules`: metadata grouping events by date or project
-  - `events`: individual calendar entries (title, start/end times, type)
-  - `chat_messages`: user–assistant conversation history
-  - `ai_insights`: computed insights or recommendations tied to schedules
-- **Migrations & Seeding**: We use Drizzle’s migration tool to evolve schemas safely. A seeding script populates sample data for testing and local development.
-- **Backups & Retention**: Automated daily database backups, with a 7-day retention policy to guard against accidental data loss.
+-  **Technology & ORM**:
+   - PostgreSQL as the primary data store.  
+   - Drizzle ORM provides type-safe schema definitions and query builders in TypeScript.  
+-  **Data Organization**:
+   - Authentication data (users, sessions) in separate tables under an `auth` schema.  
+   - Application data (events and chat messages) in tables under a `schedule` schema.  
+-  **Access Patterns**:
+   - CRUD operations for events and chat messages via Drizzle queries in API routes.  
+   - Indexed columns (e.g., `user_id`, `event_date`) speed up searches and date-based queries.  
+-  **Data Practices**:
+   - Migrations handled by Drizzle’s migration tool to evolve schema safely.  
+   - Connection pooling (managed by Vercel and pg library) ensures database connections stay healthy.  
 
 ## 3. Database Schema
 
-Below is a human-readable overview, followed by the SQL definition for PostgreSQL.
+### Human-Readable Description
 
-**Entities & Relationships**
+-  **Users Table** stores user profile and login credentials.  
+-  **Sessions Table** tracks active sessions and tokens for each user.  
+-  **Events Table** holds structured schedule entries (name, date, time, duration, location).  
+-  **Chat Messages Table** logs raw user messages and AI responses, linked to events when applicable.
 
-- **User**: has many Schedules and Chat Messages
-- **Schedule**: belongs to a User, has many Events and Insights
-- **Event**: belongs to a Schedule and a User
-- **Chat Message**: belongs to a User
-- **AI Insight**: belongs to a Schedule
-
-**PostgreSQL Schema**
+### SQL Schema (PostgreSQL)
 
 ```sql
--- Users
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
+-- Authentication Schema
+CREATE TABLE auth.users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  hashed_password TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Schedules
-CREATE TABLE schedules (
-  id SERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(id) ON DELETE CASCADE,
-  name VARCHAR(100) NOT NULL,
-  date DATE NOT NULL,
+CREATE TABLE auth.sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  session_token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Events
-CREATE TABLE events (
-  id SERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(id) ON DELETE CASCADE,
-  schedule_id INT REFERENCES schedules(id) ON DELETE CASCADE,
-  title VARCHAR(200) NOT NULL,
-  start_time TIMESTAMPTZ NOT NULL,
-  end_time TIMESTAMPTZ NOT NULL,
-  event_type VARCHAR(50),
+-- Schedule Schema
+CREATE TABLE schedule.events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  event_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  duration INTERVAL NOT NULL,
+  location TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Chat Messages
-CREATE TABLE chat_messages (
-  id SERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(id) ON DELETE CASCADE,
-  role VARCHAR(20) NOT NULL, -- 'user' or 'assistant'
+CREATE TABLE schedule.chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT CHECK(role IN ('user','ai')) NOT NULL,
   content TEXT NOT NULL,
+  related_event_id UUID REFERENCES schedule.events(id),
   timestamp TIMESTAMPTZ DEFAULT NOW()
-);
-
--- AI Insights
-CREATE TABLE ai_insights (
-  id SERIAL PRIMARY KEY,
-  schedule_id INT REFERENCES schedules(id) ON DELETE CASCADE,
-  insight TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```  
 
 ## 4. API Design and Endpoints
 
-We use RESTful-style Next.js API routes under `/app/api`. Key endpoints:
+The backend exposes a RESTful interface via Next.js API routes. Main endpoints include:
 
-- **Authentication** (`/app/api/auth/[...nextauth]`)
-  - Sign up, sign in, and session management via Better Auth.
-- **Chat** (`/app/api/chat/route.ts`)
-  - POST: Accepts user message, streams AI response via Vercel AI SDK, and optionally saves events or messages through Drizzle.
-- **Schedules** (`/app/api/schedules/route.ts`)
-  - GET: Fetches all schedules for the authenticated user.
-  - POST: Creates a new schedule entry.
-- **Events** (`/app/api/events/route.ts`)
-  - GET: Retrieves events for a given schedule.
-  - POST: Adds a new event parsed from chat or direct input.
-- **Insights** (`/app/api/insights/route.ts`)
-  - GET: Returns AI-generated insights for a schedule.
+-  **POST `/api/chat`**  
+   - Purpose: Process user messages, call the AI model, extract structured event data, and save both messages and events.  
+   - Flow:  
+     1. Authenticate request via session token.  
+     2. Forward message to Vercel AI SDK with function definitions.  
+     3. Receive AI response and function call output.  
+     4. Persist new event (if created) and chat message.  
+     5. Return AI reply to the client.
 
-Endpoints enforce authentication middleware so only logged-in users can access or modify their data.
+-  **GET `/api/events`**  
+   - Purpose: Fetch a user’s events for display in the dashboard.  
+   - Supports query parameters like date ranges or sorting.
+
+-  **GET `/api/chat/history`**  
+   - Purpose: Retrieve past chat messages for conversation continuity.
+
+-  **Auth Endpoints** (handled by Better Auth under the hood):  
+   - Sign-up, sign-in, sign-out, session validation.
+
+Each endpoint performs input validation, authenticates the user, and returns JSON payloads with clear status codes (200, 401, 500).
 
 ## 5. Hosting Solutions
 
-We deploy the backend to **Vercel**, which offers:
+We host the backend on Vercel’s serverless platform, complemented by local Docker setups for development:
 
-- **Serverless Functions**: Automatic scaling of API routes without server management.
-- **Global Edge Network**: Low-latency delivery for both static assets and API responses.
-- **Integrated CI/CD**: Every commit triggers a build and deploy, ensuring the latest code is live quickly.
+-  **Vercel (Production)**:
+   - Serverless functions automatically deploy from the `main` branch.  
+   - Global edge network accelerates content delivery and reduces latency.  
+   - Built-in CI/CD runs on each push, ensuring zero-downtime deployments.  
+-  **Docker & Docker Compose (Local Dev)**:
+   - Containers for Next.js app and local PostgreSQL instance.  
+   - Ensures consistent environments and easy onboarding.
 
-For local development and containerized hosting, we use Docker & Docker Compose. This mirrors production by running:
-
-- A **Node.js** container for the Next.js app
-- A **PostgreSQL** container for the database
+Benefits:
+-  Scalability: Functions scale per request.  
+-  Reliability: Automatic retries and health checks.  
+-  Cost-Effectiveness: Pay-per-use billing for serverless invocations.
 
 ## 6. Infrastructure Components
 
-- **Load Balancing & Edge**: Vercel’s global edge network balances traffic across regions automatically.
-- **CDN**: Static assets (JavaScript, CSS, images) are cached at edge nodes for fast delivery.
-- **Caching**:
-  - **SWR** or **React Query** on the frontend caches API responses.
-  - **Database query caching** via PostgreSQL’s built-in caching and indexes.
-- **Docker**: Ensures reproducible environments for development and staging.
+Key components work together to ensure high performance:
 
-All components work together to deliver fast page loads, snappy API responses, and reliable uptime.
+-  **Load Balancing**: Handled by Vercel’s global edge network, distributing requests across the nearest region.  
+-  **CDN**: Static assets and frontend pages cached at the edge for low latency.  
+-  **Caching Mechanisms**:
+   - Edge caching for static resources managed by Vercel.  
+   - Client-side caching with SWR or React Query to minimize redundant API calls.  
+-  **Database Connection Pool**: Managed by the `pg` library with pooling settings, preventing overload.  
+-  **Container Network** (Dev): Docker Compose links app and database containers over a private network.
 
 ## 7. Security Measures
 
-- **Authentication & Authorization**: Better Auth handles secure session cookies and JWT tokens. All API routes check user identity and resource ownership.
-- **Transport Security**: HTTPS enforced via Vercel.
-- **Encryption**:
-  - **In Transit**: TLS for all network traffic.
-  - **At Rest**: PostgreSQL data volumes encrypted by default on managed hosting.
-- **Environment Variables**: Secrets (database URL, AI API keys) stored securely in Vercel’s environment settings.
-- **Input Validation**: All incoming data is validated and sanitized to prevent SQL injection or XSS.
-- **Dependency Audits**: Regular `npm audit` and Dependabot PRs keep libraries up to date.
+We follow industry best practices to protect user data and comply with privacy standards:
+
+-  **Authentication & Authorization**:
+   - Better Auth manages sign-up, sign-in, password hashing, and sessions.  
+   - Drizzle adapter stores session tokens securely in PostgreSQL.  
+   - API routes validate session tokens on every request.
+-  **Data Encryption**:
+   - HTTPS enforced on all endpoints.  
+   - Database connections secured with TLS.  
+   - Environment secrets stored in Vercel’s secret manager and never committed to code.
+-  **Input Validation & Rate Limiting**:
+   - Server-side validation for all incoming data.  
+   - Future enhancement: rate limiting on `/api/chat` to prevent abuse.
+-  **Vulnerability Protection**:
+   - Regular dependency audits (npm audit) and security patches.  
+   - HTTP headers (CSP, HSTS) configured to prevent common web attacks.
 
 ## 8. Monitoring and Maintenance
 
-- **Logging**: Next.js logs and Vercel function logs provide request and error tracing.
-- **Error Tracking**: Sentry (or a similar service) captures exceptions in production.
-- **Performance Monitoring**: Vercel Analytics and database slow-query logs identify bottlenecks.
-- **Health Checks**: Synthetic tests (via Pingdom or Uptime.com) monitor API endpoints.
-- **Automated Migrations**: Drizzle’s migration tool runs schema updates as part of the CI pipeline.
-- **Backup Rotation**: Daily database backups with automated cleanup of old snapshots.
+To keep the backend reliable and performant, we use:
+
+-  **Logging & Error Tracking**:
+   - Application logs via Vercel’s built-in logging dashboard.  
+   - Integration with Sentry or a similar service for exception tracking (recommended).  
+-  **Performance Monitoring**:
+   - Vercel Analytics for function latency and error rates.  
+   - Database metrics (CPU, connections, query times) via a managed Postgres dashboard.
+-  **Maintenance Strategies**:
+   - Automated migrations on deployment using Drizzle’s CLI.  
+   - Scheduled dependency updates and security reviews.  
+   - Backup policies: Regular automated database backups through the cloud provider.
 
 ## 9. Conclusion and Overall Backend Summary
 
-Our backend is a modern, cloud-ready stack built around Next.js API routes, PostgreSQL, and Drizzle ORM. It balances developer productivity (TypeScript, modular services) with operational excellence (serverless scaling, CDN, edge caching). Key strengths:
+The AI Schedule Auditor’s backend is a modern, serverless architecture that balances scalability, maintainability, and performance:
 
-- **Scalable**: Serverless functions and a managed database scale with user demand.
-- **Secure**: Better Auth, HTTPS, and encryption protect user data.
-- **Maintainable**: Clear code organization, type-safe ORM, and automated migrations streamline updates.
-- **Performant**: Global edge network, CDNs, and caching deliver a fast user experience.
+-  **Serverless API** on Vercel ensures auto-scaling and global reach.  
+-  **PostgreSQL + Drizzle ORM** delivers robust data management with type safety.  
+-  **Better Auth** guarantees secure authentication and session handling.  
+-  **AI Integration** via Vercel AI SDK and function calling enables seamless natural language processing.  
+-  **Infrastructure**—from edge caching to containerized dev environments—provides consistency and speed.
 
-This setup aligns perfectly with the goal of an AI-powered schedule auditor: real-time chat, secure personal data handling, and an insightful dashboard—all delivered through a reliable, maintainable backend.
+Together, these components empower users to manage schedules through an intuitive chat interface while giving the development team a clear, modular, and secure foundation to build upon.
